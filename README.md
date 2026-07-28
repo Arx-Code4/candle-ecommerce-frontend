@@ -4,7 +4,7 @@
 > Modern tooling, scalable architecture, and sensible defaults—so you can focus on building features instead of configuring infrastructure.
 
 ---
-
+ 
 ## ✨ Features
 
 * ⚡ **Vite** for lightning-fast development and builds
