@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
@@ -18,28 +18,32 @@ function PageLoader() {
   );
 }
 
-export default function AppRouter() {
-  return (
-    <BrowserRouter>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Public routes */}
-          <Route element={<PublicRoute />}>
-            <Route element={<AuthLayout />}>
-              <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-            </Route>
-          </Route>
+// Wrap each lazy element so Suspense boundaries stay per-page,
+// matching the granularity your original Suspense had.
+const withSuspense = (element: React.ReactNode) => (
+  <Suspense fallback={<PageLoader />}>{element}</Suspense>
+);
 
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<DashboardLayout />}>
-              <Route path={ROUTES.HOME} element={<DashboardPage />} />
-            </Route>
-          </Route>
+const router = createBrowserRouter([
+  {
+    element: <PublicRoute />,
+    children: [
+      {
+        element: <AuthLayout />,
+        children: [{ path: ROUTES.LOGIN, element: withSuspense(<LoginPage />) }],
+      },
+    ],
+  },
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <DashboardLayout />,
+        children: [{ path: ROUTES.HOME, element: withSuspense(<DashboardPage />) }],
+      },
+    ],
+  },
+  { path: '*', element: withSuspense(<NotFoundPage />) },
+]);
 
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
-  );
-}
+export default router;
