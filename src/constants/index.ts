@@ -5,6 +5,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   DASHBOARD: '/dashboard',
+  ADMIN_PRODUCTS: '/admin/products',
 } as const;
 
 export const QUERY_KEYS = {
