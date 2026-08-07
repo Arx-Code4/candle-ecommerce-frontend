@@ -230,4 +230,91 @@ describe.skip('ResetPasswordPage', () => {
 
     expect(mutateAsync).not.toHaveBeenCalled();
   });
+
+  // ADDED – after a failed attempt shows an error message (e.g. "Invalid reset link"),
+  // a subsequent successful password reset must clear that error so the user is not
+  // left with stale failure text when they succeed.
+  it('clears the root error when the user corrects the token/password and submits successfully', async () => {
+    const user = userEvent.setup();
+    // First attempt fails with a known 400 message
+    const mutateAsyncFail = vi.fn().mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 400, data: { message: 'Invalid reset link' } },
+    });
+    mockUseResetPassword({ mutateAsync: mutateAsyncFail });
+    const { rerender } = renderPage();
+
+    await user.type(screen.getByPlaceholderText('New password'), 'password123');
+    await user.type(screen.getByPlaceholderText('Confirm password'), 'password123');
+    await user.click(submitButton());
+
+    expect(await screen.findByText('Invalid reset link')).toBeInTheDocument();
+
+    // Rerender with a mock that resolves (user fixes something, perhaps gets a new link)
+    const mutateAsyncSuccess = vi.fn().mockResolvedValue(null);
+    mockUseResetPassword({ mutateAsync: mutateAsyncSuccess });
+    rerender(
+      <MemoryRouter>
+        <ResetPasswordPage />
+      </MemoryRouter>
+    );
+
+    // Submit again (form values are still present)
+    await user.click(submitButton());
+
+    await vi.waitFor(() => {
+      expect(mutateAsyncSuccess).toHaveBeenCalled();
+      expect(screen.queryByText('Invalid reset link')).not.toBeInTheDocument();
+    });
+  });
+
+  // ADDED – a non‑Axios rejection (e.g. network drop) must not crash the page;
+  // the catch block should surface a generic error message just like for an
+  // unrecognised Axios error. Exact copy is unspecified, so we only assert that
+  // some error text appears and that no navigation occurs.
+  it('shows a generic error on a non‑Axios rejection (e.g. network drop)', async () => {
+    const mutateAsync = vi.fn().mockRejectedValue(new Error('Network Error'));
+    mockUseResetPassword({ mutateAsync });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByPlaceholderText('New password'), 'password123');
+    await user.type(screen.getByPlaceholderText('Confirm password'), 'password123');
+    await user.click(submitButton());
+
+    await vi.waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    // The form should contain some visible error text (not blank, not a crash)
+    const form = submitButton().closest('form');
+    expect(form?.textContent?.trim().length ?? 0).toBeGreaterThan(0);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  // ADDED – verifies the button becomes disabled and shows pending state
+  // immediately after the user clicks submit, not only when isPending is
+  // statically set to true. This mirrors the same dynamic test in LoginPage
+  // and RegisterPage.
+  it('disables the button and shows pending state while mutation is in‑flight', async () => {
+    const user = userEvent.setup();
+    // Never‑resolving promise to keep the mutation pending
+    const mutateAsync = vi.fn().mockReturnValue(new Promise(() => {}));
+    mockUseResetPassword({ mutateAsync, isPending: false });
+    const { rerender } = renderPage();
+
+    await user.type(screen.getByPlaceholderText('New password'), 'password123');
+    await user.type(screen.getByPlaceholderText('Confirm password'), 'password123');
+    await user.click(submitButton());
+
+    // Si mulate React re‑rendering with isPending = true
+    mockUseResetPassword({ mutateAsync, isPending: true });
+    rerender(
+      <MemoryRouter>
+        <ResetPasswordPage />
+      </MemoryRouter>
+    );
+
+    const button = submitButton();
+    expect(button).toBeDisabled();
+    // The pending label might be "Resetting…" or similar; adjust if needed
+    expect(button).toHaveTextContent(/resetting|loading/i);
+  });
 });

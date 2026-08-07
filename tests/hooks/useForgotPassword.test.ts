@@ -76,4 +76,37 @@ describe.skip('useForgotPassword', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toBe(mockError);
   });
+
+  // ADDED TEST — ensures the hook does not fire a second request while one is
+  // already in‑flight. A loading guard (isLoading check) prevents duplicate
+  // submissions, which for a forgot‑password flow avoids sending multiple
+  // emails and looking like a broken UI.
+  it('does not fire a second request while the first is still in-flight', async () => {
+    let resolvePost: (value: unknown) => void;
+    const postPromise = new Promise((resolve) => {
+      resolvePost = resolve;
+    });
+    vi.mocked(api.post).mockReturnValue(postPromise as ReturnType<typeof api.post>);
+
+    const { Wrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useForgotPassword(), { wrapper: Wrapper });
+
+    // Fire the first mutation
+    result.current.mutate({ email: 'first@example.com' });
+    // Immediately fire a second while the first is pending
+    result.current.mutate({ email: 'second@example.com' });
+
+    // Only one API call should have been made (the second call is blocked)
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post).toHaveBeenCalledWith('/auth/forgot-password', {
+      email: 'first@example.com',
+    });
+
+    // Resolve the first call
+    resolvePost!({ data: null });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // After resolution, the second call was effectively ignored; no extra API call
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
 });

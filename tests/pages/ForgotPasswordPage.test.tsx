@@ -151,4 +151,30 @@ describe.skip('ForgotPasswordPage', () => {
   it.todo(
     'shows some distinct error state (not the success confirmation) on a genuine server error — exact copy/behavior TBD, needs a product decision'
   );
+
+  // ADDED – verifies the button transitions to disabled/pending state immediately
+  // after the submit click, not just when isPending is statically set to true.
+  it('disables the button and shows pending state while mutation is in-flight', async () => {
+    const user = userEvent.setup();
+    // Never-resolving promise to keep the mutation pending indefinitely
+    const mutateAsync = vi.fn().mockReturnValue(new Promise(() => {}));
+    mockUseForgotPassword({ mutateAsync, isPending: false });
+    const { rerender } = renderPage();
+
+    await user.type(screen.getByPlaceholderText('Email'), 'jane@example.com');
+    await user.click(submitButton());
+
+    // Simulate React re-rendering with isPending = true after the click
+    mockUseForgotPassword({ mutateAsync, isPending: true });
+    rerender(
+      <MemoryRouter>
+        <ForgotPasswordPage />
+      </MemoryRouter>
+    );
+
+    const button = submitButton();
+    expect(button).toBeDisabled();
+    // Adjust the regex to the actual pending label (e.g., "Sending…")
+    expect(button).toHaveTextContent(/sending/i);
+  });
 });

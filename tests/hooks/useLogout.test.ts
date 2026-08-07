@@ -86,4 +86,76 @@ describe.skip('useLogout', () => {
     renderHook(() => useLogout(), { wrapper: Wrapper });
     expect(api.post).not.toHaveBeenCalled();
   });
+
+  // ADDED TEST — local logout must happen even if the component unmounts before
+  // the API call settles (user navigates away, etc.). The mutation's onSettled
+  // is decoupled from the component's lifecycle, so clearAuth + navigate still
+  // fire.
+  it('clears auth and navigates to login even if the component unmounts during the request', async () => {
+    let resolvePost: (value: unknown) => void;
+    const postPromise = new Promise((resolve) => {
+      resolvePost = resolve;
+    });
+    vi.mocked(api.post).mockReturnValue(postPromise as ReturnType<typeof api.post>);
+
+    const { Wrapper } = createQueryWrapper();
+    const { result, unmount } = renderHook(() => useLogout(), { wrapper: Wrapper });
+
+    result.current.mutate();
+
+    unmount(); // remove the hook from React tree
+
+    // Resolve the request after unmount
+    resolvePost!({ data: null });
+
+    await vi.waitFor(() => {
+      expect(clearAuth).toHaveBeenCalled();
+      expect(navigate).toHaveBeenCalledWith(ROUTES.LOGIN);
+    });
+  });
+
+  // ADDED TEST — if clearAuth itself throws (e.g. corrupted state), the mutation
+  // should enter an error state and navigation must be skipped because the user
+  // might still be marked as authenticated client‑side.
+  it('skips navigation when clearAuth throws, and surfaces the error', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: null });
+    // Override the store mock so clearAuth throws
+    vi.mocked(useAuthStore).mockImplementation((selector) =>
+      selector({
+        clearAuth: vi.fn().mockImplementation(() => {
+          throw new Error('clearAuth failed');
+        }),
+      } as unknown as ReturnType<typeof useAuthStore.getState>)
+    );
+    const { Wrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useLogout(), { wrapper: Wrapper });
+
+    result.current.mutate();
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(navigate).not.toHaveBeenCalled();
+    expect(result.current.error).toBeInstanceOf(Error);
+  });
+
+  // ADDED TEST — combination: API succeeds but clearAuth throws; navigation
+  // still skipped (mirrors the decision above but exercises the success path of
+  // the HTTP call).
+  it('does not navigate when API call succeeds but clearAuth throws', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: null });
+    vi.mocked(useAuthStore).mockImplementation((selector) =>
+      selector({
+        clearAuth: vi.fn().mockImplementation(() => {
+          throw new Error('clearAuth failed');
+        }),
+      } as unknown as ReturnType<typeof useAuthStore.getState>)
+    );
+    const { Wrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useLogout(), { wrapper: Wrapper });
+
+    result.current.mutate();
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(api.post).toHaveBeenCalledWith('/auth/logout'); // API did fire
+    expect(navigate).not.toHaveBeenCalled();
+  });
 });

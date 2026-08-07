@@ -78,4 +78,36 @@ describe.skip('useResetPassword', () => {
       expect(result.current.error).toMatchObject({ response: { data: { message } } });
     }
   );
+
+  // ADDED TEST — prevents duplicate submissions while a reset request is in-flight.
+  // A rapid double-click must not fire two API calls; the second call is suppressed.
+  it('does not fire a second request while the first is still in-flight', async () => {
+    let resolvePost: (value: unknown) => void;
+    const postPromise = new Promise((resolve) => {
+      resolvePost = resolve;
+    });
+    vi.mocked(api.post).mockReturnValue(postPromise as ReturnType<typeof api.post>);
+
+    const { Wrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useResetPassword(), { wrapper: Wrapper });
+
+    // Fire the first mutation
+    result.current.mutate({ token: 'token-1', newPassword: 'Pass1234' });
+    // Immediately fire a second while the first is pending
+    result.current.mutate({ token: 'token-2', newPassword: 'Pass5678' });
+
+    // Only one API call should have been made (the second call is blocked)
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post).toHaveBeenCalledWith('/auth/reset-password', {
+      token: 'token-1',
+      newPassword: 'Pass1234',
+    });
+
+    // Resolve the first call
+    resolvePost!({ data: null });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // After resolution, the second call was effectively ignored; no extra API call
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
 });

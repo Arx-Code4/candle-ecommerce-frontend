@@ -218,4 +218,179 @@ describe.skip('useRegister', () => {
     expect(setAuth).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  // ADDED TEST — missing accessToken in the response is treated as an error;
+  // no auth state or navigation side effects should occur.
+  it('does not call setAuth or navigate when response lacks accessToken', async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      data: { user: mockUser }, // no accessToken
+    });
+    const result = setup();
+
+    result.current.mutate({
+      name: 'Jane',
+      email: 'jane@example.com',
+      password: 'password123',
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(setAuth).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  // ADDED TEST — a non‑409 server error (e.g. 500) sets isError without side effects.
+  it('propagates a server error (500) failure without side effects', async () => {
+    const mockError = { isAxiosError: true, response: { status: 500 } };
+    vi.mocked(api.post).mockRejectedValue(mockError);
+    const result = setup();
+
+    result.current.mutate({
+      name: 'Jane',
+      email: 'jane@example.com',
+      password: 'password123',
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(setAuth).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  // ADDED TEST — if setAuth throws during onSuccess, the mutation enters an error
+  // state and navigation is prevented.
+  it('transitions to error state when setAuth throws', async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      data: { user: mockUser, accessToken: 'at-1', cartItemAdded: false },
+    });
+    vi.mocked(useAuthStore).mockImplementation((selector) =>
+      selector({
+        setAuth: vi.fn().mockImplementation(() => {
+          throw new Error('setAuth failed');
+        }),
+      } as unknown as ReturnType<typeof useAuthStore.getState>)
+    );
+    const result = setup();
+
+    result.current.mutate({
+      name: 'Jane',
+      email: 'jane@example.com',
+      password: 'password123',
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  // ADDED TEST — unmounting the component before the mutation resolves should
+  // suppress all side effects (no auth, no navigation).
+  it('does not call setAuth or navigate if the component unmounts before the response', async () => {
+    let resolvePost: (value: unknown) => void;
+    const postPromise = new Promise((resolve) => {
+      resolvePost = resolve;
+    });
+    vi.mocked(api.post).mockReturnValue(postPromise as ReturnType<typeof api.post>);
+
+    const { Wrapper, queryClient } = createQueryWrapper();
+    const { result, unmount } = renderHook(() => useRegister(), { wrapper: Wrapper });
+    vi.spyOn(queryClient, 'invalidateQueries'); // keep spy consistent
+
+    result.current.mutate({
+      name: 'Jane',
+      email: 'jane@example.com',
+      password: 'password123',
+    });
+
+    unmount(); // remove the hook from React tree
+
+    resolvePost!({
+      data: { user: mockUser, accessToken: 'at-1', cartItemAdded: false },
+    });
+
+    await vi.waitFor(() => {
+      expect(setAuth).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
+    });
+  });
+
+  // ADDED TEST — concurrent mutations: only the latest call’s side effects are
+  // applied; the stale response is discarded.
+  it('handles concurrent mutations by discarding stale responses', async () => {
+    let resolvePost1: (value: unknown) => void;
+    let resolvePost2: (value: unknown) => void;
+    const postPromise1 = new Promise((resolve) => {
+      resolvePost1 = resolve;
+    });
+    const postPromise2 = new Promise((resolve) => {
+      resolvePost2 = resolve;
+    });
+
+    vi.mocked(api.post)
+      .mockReturnValueOnce(postPromise1 as ReturnType<typeof api.post>)
+      .mockReturnValueOnce(postPromise2 as ReturnType<typeof api.post>);
+
+    const result = setup();
+
+    // First mutation (will become stale)
+    result.current.mutate({
+      name: 'Stale',
+      email: 'stale@example.com',
+      password: 'oldpass',
+    });
+    // Second mutation (latest)
+    result.current.mutate({
+      name: 'Latest',
+      email: 'latest@example.com',
+      password: 'latestpass',
+    });
+
+    // Resolve the latest first
+    const latestUser: User = { ...mockUser, id: 'u-latest', email: 'latest@example.com' };
+    resolvePost2!({
+      data: { user: latestUser, accessToken: 'token-latest', cartItemAdded: true },
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Only the latest call’s side effects
+    expect(setAuth).toHaveBeenCalledTimes(1);
+    expect(setAuth).toHaveBeenCalledWith('token-latest', latestUser);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    // cart invalidation (cartItemAdded: true from latest)
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.CART] });
+
+    // Resolve the stale first mutation
+    const staleUser: User = { ...mockUser, id: 'u-stale', email: 'stale@example.com' };
+    resolvePost1!({
+      data: { user: staleUser, accessToken: 'token-stale', cartItemAdded: false },
+    });
+
+    // Flush and ensure no extra side effects from stale response
+    await vi.waitFor(() => {
+      expect(setAuth).toHaveBeenCalledTimes(1);
+      expect(navigate).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ADDED TEST — if getSafeRedirectPath throws, the hook falls back silently to
+  // HOME (the mutation still succeeds and navigates home).
+  it('navigates to home silently when getSafeRedirectPath throws', async () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('redirect=/checkout'),
+      vi.fn(),
+    ] as unknown as ReturnType<typeof useSearchParams>);
+    vi.mocked(getSafeRedirectPath).mockImplementation(() => {
+      throw new Error('Invalid redirect');
+    });
+    vi.mocked(api.post).mockResolvedValue({
+      data: { user: mockUser, accessToken: 'at-1', cartItemAdded: false },
+    });
+    const result = setup();
+
+    result.current.mutate({
+      name: 'Jane',
+      email: 'jane@example.com',
+      password: 'password123',
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(navigate).toHaveBeenCalledWith(ROUTES.HOME);
+  });
 });

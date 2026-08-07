@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import RegisterPage from '@/pages/auth/RegisterPage';
@@ -211,5 +211,88 @@ describe.skip('RegisterPage', () => {
 
     expect(mutateAsync).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('Email already in use')).not.toBeInTheDocument();
+  });
+  // ADDED – after a failed 409 attempt shows “Email already in use”, a subsequent
+  // successful registration must clear that root error.
+  it('clears the root error when the user corrects data and registers successfully', async () => {
+    const user = userEvent.setup();
+    // First attempt fails with 409
+    const mutateAsyncFail = vi.fn().mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 409 },
+    });
+    mockUseRegister({ mutateAsync: mutateAsyncFail });
+    const { rerender } = renderPage();
+
+    await user.type(screen.getByPlaceholderText('Name'), 'Jane');
+    await user.type(screen.getByPlaceholderText('Email'), 'jane@example.com');
+    await user.type(screen.getByPlaceholderText('Password'), 'password123');
+    await user.click(submitButton());
+
+    expect(await screen.findByText('Email already in use')).toBeInTheDocument();
+
+    // Rerender with a mock that resolves (user fixes data)
+    const mutateAsyncSuccess = vi.fn().mockResolvedValue({});
+    mockUseRegister({ mutateAsync: mutateAsyncSuccess });
+    rerender(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>
+    );
+
+    // Submit again (form values persist)
+    await user.click(submitButton());
+
+    await waitFor(() => {
+      expect(mutateAsyncSuccess).toHaveBeenCalled();
+      expect(screen.queryByText('Email already in use')).not.toBeInTheDocument();
+    });
+  });
+
+  // ADDED – a network‑level error (plain Error rejection) must still surface
+  // a generic message, not crash the page. The exact copy is a team decision;
+  // using a placeholder until the UX is finalised.
+  it('shows a generic error on a non‑Axios rejection (e.g. network drop)', async () => {
+    const mutateAsync = vi.fn().mockRejectedValue(new Error('Network Error'));
+    mockUseRegister({ mutateAsync });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByPlaceholderText('Name'), 'Jane');
+    await user.type(screen.getByPlaceholderText('Email'), 'jane@example.com');
+    await user.type(screen.getByPlaceholderText('Password'), 'password123');
+    await user.click(submitButton());
+
+    // PLACEHOLDER – the actual error text is not yet decided for non‑409 errors.
+    // Replace with the final string once the team settles on it.
+    expect(await screen.findByText('An unexpected error occurred')).toBeInTheDocument();
+  });
+
+  // ADDED – verifies the button becomes disabled and shows pending state
+  // dynamically during the mutation, not just when isPending is statically set.
+  it('disables the button and shows pending state while mutation is in‑flight', async () => {
+    const user = userEvent.setup();
+    // Never‑resolving promise to keep the mutation pending
+    const mutateAsync = vi.fn().mockReturnValue(new Promise(() => {}));
+    mockUseRegister({ mutateAsync, isPending: false });
+    const { rerender } = renderPage();
+
+    await user.type(screen.getByPlaceholderText('Name'), 'Jane');
+    await user.type(screen.getByPlaceholderText('Email'), 'jane@example.com');
+    await user.type(screen.getByPlaceholderText('Password'), 'password123');
+    await user.click(submitButton());
+
+    // Simulate React re‑rendering with isPending = true
+    mockUseRegister({ mutateAsync, isPending: true });
+    rerender(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>
+    );
+
+    const button = submitButton();
+    expect(button).toBeDisabled();
+    // Adjust the regex to match the pending label – change if the actual label differs
+    expect(button).toHaveTextContent(/signing up|creating account/i);
   });
 });
