@@ -8,6 +8,8 @@ import type { ReactNode } from 'react';
 //
 // Returns both the Wrapper component (for renderHook's `wrapper` option)
 // AND the underlying QueryClient instance — tests that spy on
+// invalidateQueries need a live reference to the exact same client
+// instance the hook will actually use, not a lookalike.
 // invalidateQueries (useRegister/useLogin) need a live reference to the
 // exact same client instance the hook will actually use, not a lookalike.
 export function createQueryWrapper() {
