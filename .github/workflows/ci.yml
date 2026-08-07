@@ -6,6 +6,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      VITE_CHAPA_API_KEY: ${{ secrets.VITE_CHAPA_API_KEY }}
+      VITE_APP_NAME: ${{ secrets.VITE_APP_NAME }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
