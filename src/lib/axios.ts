@@ -15,6 +15,13 @@ const api = axios.create({
   timeout: 10000,
   withCredentials: true,
 });
+// Axios's own built-in defaults set Content-Type: application/x-www-form-urlencoded
+// for POST/PUT/PATCH at a per-method layer, separate from our instance-level JSON
+// default. A per-request `Content-Type: undefined` override (see postForm/patchForm)
+// can't reach that deeper layer — removing it here, once, fixes it at the source.
+delete api.defaults.headers.post['Content-Type'];
+delete api.defaults.headers.patch['Content-Type'];
+delete api.defaults.headers.put['Content-Type'];
 
 // Request interceptor — attach the access token to every request
 api.interceptors.request.use((config) => {
@@ -59,12 +66,19 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig | undefined;
     const hadAuthHeader = Boolean(originalRequest?.headers?.Authorization);
+    // The refresh endpoint's own 401 must never trigger another refresh
+    // attempt — refreshAccessToken() is already in flight when this
+    // response comes back (refreshPromise is still set), so a nested call
+    // would just await that same still-pending promise and hang forever.
+    // A failed refresh should be treated as final: clear auth and bail out.
+    const isRefreshCall = originalRequest?.url === '/auth/refresh-token';
 
     if (
       error.response?.status === 401 &&
       originalRequest &&
       hadAuthHeader &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !isRefreshCall
     ) {
       originalRequest._retry = true;
       try {
@@ -77,10 +91,31 @@ api.interceptors.response.use(
       }
     }
 
+    if (isRefreshCall) {
+      // Refresh failed outright (401/403/whatever) — same cleanup as the
+      // catch block above, since there's no "retry" path for this request.
+      useAuthStore.getState().clearAuth();
+      window.location.href = '/login';
+    }
+
     return Promise.reject(error);
   }
 );
+// FormData requests (product photo uploads) must NOT carry the instance's
+// default `Content-Type: application/json` header — the browser needs to
+// set its own `multipart/form-data; boundary=...` header itself, with a
+// boundary value generated fresh per request. Setting Content-Type to
+// undefined here removes the inherited default for just this one call,
+// letting axios/the browser fill in the correct multipart header instead.
+// Centralized here — once — so no hook that uploads files has to
+// remember this quirk on its own or risk getting it wrong.
+export function postForm<T>(url: string, formData: FormData) {
+  return api.post<T>(url, formData, { headers: { 'Content-Type': false } });
+}
 
+export function patchForm<T>(url: string, formData: FormData) {
+  return api.patch<T>(url, formData, { headers: { 'Content-Type': false } });
+}
 export default api;
 
 //what's updated?

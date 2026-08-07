@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import api from '@/lib/axios';
+import { postForm, patchForm } from '@/lib/axios';
 import { useAuthStore } from '@/store/auth.store';
 
 /**
@@ -87,7 +88,7 @@ function buildAdapter(queues: Record<string, Step[]>, calls: Record<string, numb
   };
 }
 
-describe.skip('axios interceptors — single-flight refresh + 401 gating', () => {
+describe('axios interceptors — single-flight refresh + 401 gating', () => {
   let originalAdapter: typeof api.defaults.adapter;
 
   beforeEach(() => {
@@ -315,7 +316,6 @@ describe.skip('axios interceptors — single-flight refresh + 401 gating', () =>
       response: { status: 403, data: { message: 'refresh failed' } },
     });
   });
-
   it('resets the in-flight promise after it settles, so a later, independent 401 triggers a brand-new refresh call', async () => {
     // Confirms `refreshPromise` is nulled out in `.finally()` rather than
     // being (incorrectly) reused for unrelated later 401s once the first
@@ -335,6 +335,11 @@ describe.skip('axios interceptors — single-flight refresh + 401 gating', () =>
     await api.get('/protected');
     expect(calls['/auth/refresh-token']).toBe(1);
 
+    // A separate counter for this second phase — `calls` from phase 1 is
+    // cumulative and would still show 1 from the refresh above, making it
+    // impossible to tell "reused the old promise" apart from "made a
+    // genuinely new call." A fresh object isolates just this phase's count.
+    const calls2: Record<string, number> = {};
     api.defaults.adapter = buildAdapter(
       {
         '/protected': [
@@ -343,12 +348,12 @@ describe.skip('axios interceptors — single-flight refresh + 401 gating', () =>
         ],
         '/auth/refresh-token': [{ type: 'ok', data: { accessToken: 'token-3' } }],
       },
-      calls
+      calls2
     );
     const res = await api.get('/protected');
 
     expect(res.data).toBe('second-ok');
-    expect(calls['/auth/refresh-token']).toBe(1); // fresh counter for the new adapter/queue
+    expect(calls2['/auth/refresh-token']).toBe(1);
     expect(useAuthStore.getState().accessToken).toBe('token-3');
   });
 
@@ -397,3 +402,51 @@ describe.skip('axios interceptors — single-flight refresh + 401 gating', () =>
  * team decision rather than writing an automated test that would need to
  * hang until a timeout to demonstrate it.
  */
+
+describe('postForm / patchForm', () => {
+  it('postForm sends the given FormData without forcing a JSON Content-Type', async () => {
+    let capturedConfig: InternalAxiosRequestConfig | undefined;
+    api.defaults.adapter = vi.fn(async (config) => {
+      capturedConfig = config;
+      return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+    });
+
+    const formData = new FormData();
+    formData.append('name', 'Candle');
+    await postForm('/admin/products', formData);
+
+    expect(capturedConfig?.data).toBe(formData);
+    // If this were still 'application/json', the browser would never get
+    // the chance to attach its own multipart boundary — this is the one
+    // thing postForm exists to guarantee.
+    expect(capturedConfig?.headers?.toJSON?.()).not.toHaveProperty('Content-Type');
+  });
+
+  it('patchForm behaves the same way for updates', async () => {
+    let capturedConfig: InternalAxiosRequestConfig | undefined;
+    api.defaults.adapter = vi.fn(async (config) => {
+      capturedConfig = config;
+      return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+    });
+
+    const formData = new FormData();
+    formData.append('price', '30');
+    await patchForm('/admin/products/p1', formData);
+
+    expect(capturedConfig?.data).toBe(formData);
+    expect(capturedConfig?.headers?.toJSON?.()).not.toHaveProperty('Content-Type');
+  });
+
+  it('postForm still attaches the Authorization header like any other request', async () => {
+    useAuthStore.setState({ accessToken: 'at-1', user: null });
+    let capturedConfig: InternalAxiosRequestConfig | undefined;
+    api.defaults.adapter = vi.fn(async (config) => {
+      capturedConfig = config;
+      return { data: {}, status: 200, statusText: 'OK', headers: {}, config };
+    });
+
+    await postForm('/admin/products', new FormData());
+
+    expect(capturedConfig?.headers?.Authorization).toBe('Bearer at-1');
+  });
+});

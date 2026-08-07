@@ -96,3 +96,11 @@ export interface PaginatedResult<T> {
   limit: number;
   total: number;
 }
+
+export interface OrderSummary {
+  id: string;
+  status: string;
+  totalAmount: string;
+  itemCount: number;
+  createdAt: string;
+}
