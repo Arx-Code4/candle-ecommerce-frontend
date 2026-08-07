@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // src/config/env.ts
 import { z } from 'zod';
 
