@@ -23,6 +23,7 @@ export function adminProductEditPath(id: string): string {
 export const QUERY_KEYS = {
   USERS: 'users',
   PRODUCTS: 'products',
+  ORDERS: 'orders',
   CART: 'cart',
   ADMIN_PRODUCTS: 'admin-products',
   ADMIN_ORDERS: 'admin-orders',
