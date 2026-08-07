@@ -10,5 +10,6 @@ export const ROUTES = {
 export const QUERY_KEYS = {
   USERS: 'users',
   PRODUCTS: 'products',
+  ORDERS: 'orders',
   CART: 'cart',
 } as const;

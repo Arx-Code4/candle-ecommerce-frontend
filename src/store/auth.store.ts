@@ -35,3 +35,6 @@ export const useAuthStore = create<AuthState>()(
     { name: 'auth-storage' }
   )
 );
+
+// add near the bottom of src/store/auth.store.ts, alongside useAuthStore
+export const resetAuthStore = () => useAuthStore.setState(useAuthStore.getInitialState());
