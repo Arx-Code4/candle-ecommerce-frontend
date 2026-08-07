@@ -34,3 +34,11 @@ export interface ResetPasswordPayload {
   token: string;
   newPassword: string;
 }
+
+export interface OrderSummary {
+  id: string;
+  status: string;
+  totalAmount: string;
+  itemCount: number;
+  createdAt: string;
+}
