@@ -4,8 +4,10 @@
 // instead of building its own QueryClientProvider inline.
 import { render, type RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
 import type { ReactElement, ReactNode } from 'react';
 import { vi } from 'vitest';
+import { AxiosError } from 'axios';
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -25,42 +27,15 @@ export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptio
   return render(ui, { wrapper: AllProviders, ...options });
 }
 
-// Define the shape of the mock query result
-export interface MockQueryResult<TData> {
-  data: TData;
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
-  isPending: boolean;
-  isLoadingError: boolean;
-  isRefetchError: boolean;
-  isSuccess: boolean;
-  status: 'success' | 'error' | 'pending';
-  dataUpdatedAt: number;
-  errorUpdatedAt: number;
-  failureCount: number;
-  failureReason: Error | null;
-  errorUpdateCount: number;
-  isFetched: boolean;
-  isFetchedAfterMount: boolean;
-  isFetching: boolean;
-  isInitialLoading: boolean;
-  isPaused: boolean;
-  isPlaceholderData: boolean;
-  isRefetching: boolean;
-  isStale: boolean;
-  refetch: ReturnType<typeof vi.fn>;
-  fetchStatus: 'idle' | 'fetching' | 'paused';
-  promise: Promise<TData>;
-}
+// Use the actual TanStack Query type
+export type MockQueryResult<TData> = UseQueryResult<TData, AxiosError>;
 
-// Helper to create mock query results with all required properties
-export function createMockQueryResult<TData>(
-  data: TData,
-  overrides: Partial<Omit<MockQueryResult<TData>, 'data'>> = {}
-): MockQueryResult<TData> {
-  const baseResult: MockQueryResult<TData> = {
-    data,
+/**
+ * Professional approach: Use type assertion for test mocks
+ * This is the industry-standard pattern for mocking complex library types
+ */
+function createBaseMock<TData>(): Omit<MockQueryResult<TData>, 'data'> {
+  return {
     isLoading: false,
     isError: false,
     error: null,
@@ -68,7 +43,7 @@ export function createMockQueryResult<TData>(
     isLoadingError: false,
     isRefetchError: false,
     isSuccess: true,
-    status: 'success',
+    status: 'success' as const,
     dataUpdatedAt: Date.now(),
     errorUpdatedAt: 0,
     failureCount: 0,
@@ -82,13 +57,122 @@ export function createMockQueryResult<TData>(
     isPlaceholderData: false,
     isRefetching: false,
     isStale: false,
+    isEnabled: true,
     refetch: vi.fn(),
-    fetchStatus: 'idle',
-    promise: Promise.resolve(data),
+    fetchStatus: 'idle' as const,
+    promise: Promise.resolve(undefined as TData),
   };
-
-  return { ...baseResult, ...overrides };
 }
+
+/**
+ * Success state mock
+ */
+export function mockQuerySuccess<TData>(data: TData): MockQueryResult<TData> {
+  return {
+    ...createBaseMock<TData>(),
+    data,
+    isSuccess: true,
+  } as unknown as MockQueryResult<TData>;
+}
+
+/**
+ * Loading state mock
+ */
+export function mockQueryLoading<TData>(): MockQueryResult<TData> {
+  return {
+    ...createBaseMock<TData>(),
+    data: undefined as TData,
+    isLoading: true,
+    isPending: true,
+    isSuccess: false,
+    status: 'pending' as const,
+    isFetched: false,
+    isFetchedAfterMount: false,
+    isFetching: true,
+    isInitialLoading: true,
+    fetchStatus: 'fetching' as const,
+    promise: new Promise(() => {}),
+  } as unknown as MockQueryResult<TData>;
+}
+
+/**
+ * Error state mock
+ */
+export function mockQueryError<TData>(error: AxiosError | Error): MockQueryResult<TData> {
+  const axiosError = error instanceof AxiosError ? error : new AxiosError(error.message);
+
+  return {
+    ...createBaseMock<TData>(),
+    data: undefined as TData,
+    isLoading: false,
+    isError: true,
+    error: axiosError,
+    isPending: false,
+    isLoadingError: true,
+    isRefetchError: false,
+    isSuccess: false,
+    status: 'error' as const,
+    dataUpdatedAt: 0,
+    errorUpdatedAt: Date.now(),
+    failureCount: 1,
+    failureReason: axiosError,
+    errorUpdateCount: 1,
+    isFetched: true,
+    isFetchedAfterMount: true,
+    isFetching: false,
+    isInitialLoading: false,
+    isRefetching: false,
+    isStale: false,
+    isEnabled: true,
+    fetchStatus: 'idle' as const,
+    promise: Promise.reject(axiosError),
+  } as unknown as MockQueryResult<TData>;
+}
+
+/**
+ * Empty data state mock
+ */
+export function mockQueryEmpty<TData>(): MockQueryResult<TData> {
+  return {
+    ...createBaseMock<TData>(),
+    data: [] as TData,
+    isSuccess: true,
+  } as unknown as MockQueryResult<TData>;
+}
+
+/**
+ * Refetching state mock (data with background refetch)
+ */
+export function mockQueryRefetching<TData>(data: TData): MockQueryResult<TData> {
+  return {
+    ...createBaseMock<TData>(),
+    data,
+    isFetching: true,
+    isRefetching: true,
+    isStale: true,
+    fetchStatus: 'fetching' as const,
+    isSuccess: true,
+  } as unknown as MockQueryResult<TData>;
+}
+
+/**
+ * Generic mock creator with overrides
+ * This is the most flexible option
+ */
+export function mockQueryResult<TData>(
+  data: TData,
+  overrides: Partial<MockQueryResult<TData>> = {}
+): MockQueryResult<TData> {
+  return {
+    ...createBaseMock<TData>(),
+    data,
+    isSuccess: true,
+    ...overrides,
+  } as unknown as MockQueryResult<TData>;
+}
+
+// Backward compatibility alias
+export const createMockQueryResult = mockQueryResult;
 
 // Re-export everything so every test file imports from one place
 export * from '@testing-library/react';

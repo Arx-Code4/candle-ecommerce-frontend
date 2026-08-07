@@ -1,12 +1,16 @@
 // tests/pages/OrderHistoryPage.test.tsx
-// Source: src/pages/OrderHistoryPage.tsx
-// Per eco-9.2.3 §9.3 (OrderHistoryPage.test.tsx). Mocks useOrders (not
-// axios) per the guide's page-layer rule (§6.3).
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { renderWithProviders, screen, createMockQueryResult } from '../utils/renderWithProviders';
+import {
+  renderWithProviders,
+  screen,
+  mockQuerySuccess,
+  mockQueryLoading,
+  mockQueryError,
+} from '../utils/renderWithProviders';
 import OrderHistoryPage from '@/pages/OrderHistoryPage';
 import { useOrders } from '@/hooks/useOrders';
+import { AxiosError } from 'axios';
 
 vi.mock('@/hooks/useOrders');
 const mockedUseOrders = vi.mocked(useOrders);
@@ -43,9 +47,9 @@ const orders = [
   },
 ];
 
-describe.skip('OrderHistoryPage', () => {
+describe('OrderHistoryPage', () => {
   it('renders one OrderCard per order', () => {
-    mockedUseOrders.mockReturnValue(createMockQueryResult({ items: orders }));
+    mockedUseOrders.mockReturnValue(mockQuerySuccess({ items: orders }));
 
     renderPage();
 
@@ -53,7 +57,7 @@ describe.skip('OrderHistoryPage', () => {
   });
 
   it('each OrderCard links to its own order detail route', () => {
-    mockedUseOrders.mockReturnValue(createMockQueryResult({ items: orders }));
+    mockedUseOrders.mockReturnValue(mockQuerySuccess({ items: orders }));
 
     renderPage();
 
@@ -64,13 +68,7 @@ describe.skip('OrderHistoryPage', () => {
   });
 
   it('shows a skeleton list while loading', () => {
-    mockedUseOrders.mockReturnValue(
-      createMockQueryResult(undefined, {
-        isPending: true,
-        isLoading: true,
-        isSuccess: false,
-      })
-    );
+    mockedUseOrders.mockReturnValue(mockQueryLoading());
 
     renderPage();
 
@@ -79,11 +77,20 @@ describe.skip('OrderHistoryPage', () => {
   });
 
   it('shows an EmptyState linking to /products when there are no orders', () => {
-    mockedUseOrders.mockReturnValue(createMockQueryResult({ items: [] }));
+    mockedUseOrders.mockReturnValue(mockQuerySuccess({ items: [] }));
 
     renderPage();
 
     const link = screen.getByRole('link', { name: /catalog|browse/i });
     expect(link).toHaveAttribute('href', '/products');
+  });
+
+  it('shows an error state when the query fails', () => {
+    mockedUseOrders.mockReturnValue(mockQueryError(new AxiosError('Failed to fetch orders')));
+
+    renderPage();
+
+    // Adjust this based on how your component handles errors
+    expect(screen.getByText(/error|failed/i)).toBeInTheDocument();
   });
 });
