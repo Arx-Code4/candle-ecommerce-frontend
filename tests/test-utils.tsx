@@ -10,6 +10,8 @@ import type { ReactNode } from 'react';
 // AND the underlying QueryClient instance — tests that spy on
 // invalidateQueries need a live reference to the exact same client
 // instance the hook will actually use, not a lookalike.
+// invalidateQueries (useRegister/useLogin) need a live reference to the
+// exact same client instance the hook will actually use, not a lookalike.
 export function createQueryWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

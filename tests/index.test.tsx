@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-describe('placeholder', () => {
+describe.skip('placeholder', () => {
   it('passes', () => {
     expect(true).toBe(true);
   });
