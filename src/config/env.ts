@@ -1,16 +1,14 @@
+// src/config/env.ts
 import { z } from 'zod';
 
 const envSchema = z.object({
   VITE_API_URL: z.string().url(),
-  VITE_APP_NAME: z.string().default('App'),
-  VITE_APP_ENV: z.enum(['development', 'production']).default('development'),
+  VITE_CHAPA_API_KEY: z.string().min(1),
+  VITE_APP_NAME: z.string().default('Candle Store'),
 });
 
-const parsed = envSchema.safeParse(import.meta.env);
+export const env = envSchema.parse(import.meta.env);
 
-if (!parsed.success) {
-  console.error('Invalid env:', parsed.error.flatten().fieldErrors);
-  throw new Error('Invalid environment variables');
-}
-
-export const env = parsed.data;
+export const apiUrl = env.VITE_API_URL;
+export const chapaApiKey = env.VITE_CHAPA_API_KEY;
+export const appName = env.VITE_APP_NAME;
