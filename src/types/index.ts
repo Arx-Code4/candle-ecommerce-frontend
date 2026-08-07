@@ -10,7 +10,7 @@ export interface ApiResponse<T> {
 export interface User {
   id: string;
   email: string;
-  role: string;
+  role: 'ADMIN' | 'CUSTOMER';
   createdAt: string;
 }
 
@@ -18,4 +18,27 @@ export interface User {
 export interface LoginCredentials {
   email: string;
   password: string;
+}
+export interface RegisterCredentials {
+  name: string;
+  email: string;
+  password: string;
+  pendingVariantId?: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+}
+
+export interface OrderSummary {
+  id: string;
+  status: string;
+  totalAmount: string;
+  itemCount: number;
+  createdAt: string;
 }
