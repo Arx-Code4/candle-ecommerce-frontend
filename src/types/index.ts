@@ -95,6 +95,7 @@ export interface PaginatedResult<T> {
   page: number;
   limit: number;
   total: number;
+}
 
 export interface OrderSummary {
   id: string;
