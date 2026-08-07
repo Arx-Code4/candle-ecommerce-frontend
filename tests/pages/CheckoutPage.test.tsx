@@ -3,13 +3,14 @@
 // Per eco-9.2.3 §9.3 (CheckoutPage.test.tsx). Mocks useCart/useCheckout
 // (not axios) per the guide's page-layer rule (§6.3); also mocks
 // react-router's useNavigate to assert the empty-cart redirect guard.
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import {
   renderWithProviders,
   screen,
   userEvent,
-  createMockQueryResult,
+  mockQuerySuccess,
+  mockQueryLoading,
 } from '../utils/renderWithProviders';
 import CheckoutPage from '@/pages/CheckoutPage';
 import { useCart } from '@/hooks/useCart';
@@ -43,14 +44,25 @@ function mockCheckoutState(overrides: Partial<ReturnType<typeof useCheckout>> = 
     isError: false,
     isSuccess: false,
     error: null,
+    isIdle: true,
+    isPaused: false,
+    status: 'idle',
+    reset: vi.fn(),
     ...overrides,
   } as ReturnType<typeof useCheckout>);
 }
 
-describe.skip('CheckoutPage', () => {
+describe('CheckoutPage', () => {
+  // Clear mocks before each test
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockNavigate.mockClear();
+    mutateMock.mockClear();
+  });
+
   it('fetches the cart on mount', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -64,7 +76,7 @@ describe.skip('CheckoutPage', () => {
 
   it('redirects to /cart immediately when the cart is empty, without rendering the form', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [],
         total: '0.00',
       })
@@ -79,7 +91,7 @@ describe.skip('CheckoutPage', () => {
 
   it('redirects to /cart when every item is unavailable, same as an empty cart', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [
           { id: '1', available: false },
           { id: '2', available: false },
@@ -97,7 +109,7 @@ describe.skip('CheckoutPage', () => {
 
   it('renders the shipping form when the cart has at least one available item', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -114,7 +126,7 @@ describe.skip('CheckoutPage', () => {
 
   it('renders CartSummary in read-only mode (no "Proceed to Checkout" button here)', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -128,7 +140,7 @@ describe.skip('CheckoutPage', () => {
 
   it('blocks submit with empty shipping fields via client-side validation', async () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -145,7 +157,7 @@ describe.skip('CheckoutPage', () => {
 
   it('calls useCheckout with the form values on a valid submit', async () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -168,7 +180,7 @@ describe.skip('CheckoutPage', () => {
 
   it('renders unavailableItems inline with a link back to /cart on a 409 conflict, without retrying payment', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -195,7 +207,7 @@ describe.skip('CheckoutPage', () => {
 
   it('sets a root-level error for other errors (e.g. 502), via a different UI path than the 409 case', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -218,7 +230,7 @@ describe.skip('CheckoutPage', () => {
 
   it('renders no local success UI and does not navigate/redirect itself — delegated entirely to the hook', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
@@ -232,12 +244,7 @@ describe.skip('CheckoutPage', () => {
   });
 
   it('shows a loading state while the cart is being fetched', () => {
-    mockedUseCart.mockReturnValue(
-      createMockQueryResult(undefined, {
-        isLoading: true,
-        isSuccess: false,
-      })
-    );
+    mockedUseCart.mockReturnValue(mockQueryLoading());
     mockCheckoutState();
 
     renderPage();
@@ -249,7 +256,7 @@ describe.skip('CheckoutPage', () => {
 
   it('disables the submit button while the checkout mutation is in flight', () => {
     mockedUseCart.mockReturnValue(
-      createMockQueryResult({
+      mockQuerySuccess({
         items: [{ id: '1', available: true }],
         total: '45.00',
       })
