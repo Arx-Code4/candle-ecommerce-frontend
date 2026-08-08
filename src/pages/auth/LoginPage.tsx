@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth } from '@/hooks/useAuth';
+import { useLogin } from '@/hooks/useLogin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -13,11 +13,11 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { mutateAsync: login, isPending } = useLogin();
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setError,
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -26,10 +26,11 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       await login(data);
+      // No navigate() here — useLogin owns the redirect (role-based for
+      // admins, getSafeRedirectPath for everyone else) as a side effect
+      // of a successful mutation.
     } catch {
-      setError('root', {
-        message: 'Invalid email or password',
-      });
+      setError('root', { message: 'Invalid email or password' });
     }
   };
 
@@ -64,8 +65,8 @@ export default function LoginPage() {
 
           {errors.root && <p className="text-destructive text-xs">{errors.root.message}</p>}
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
+          <Button type="submit" disabled={isPending}>
+            {isPending ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
       </CardContent>
