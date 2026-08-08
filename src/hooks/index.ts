@@ -1,13 +1,9 @@
 // Auth
-export * from './useAuth';
 export * from './useLogin';
 export * from './useLogout';
 export * from './useRegister';
 export * from './useForgotPassword';
 export * from './useResetPassword';
-
-// Users (admin)
-export * from './useUsers';
 
 // Products (shop)
 export * from './useProducts';

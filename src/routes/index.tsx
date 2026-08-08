@@ -6,19 +6,18 @@ import AdminRoute from './AdminRoute';
 import ShopLayout from '@/components/layouts/ShopLayout';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import AdminLayout from '@/components/layouts/AdminLayout';
 import { ROUTES } from '@/constants';
 
-// Shop — public, browsable by anyone
+// Shop — public, browsable by anyone, no auth required
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const CatalogPage = lazy(() => import('@/pages/CatalogPage'));
 const ProductDetailPage = lazy(() => import('@/pages/ProductDetailPage'));
+
+// Authenticated shopper — login required
 const CartPage = lazy(() => import('@/pages/CartPage'));
 const CheckoutPage = lazy(() => import('@/pages/CheckoutPage'));
 const OrderConfirmationPage = lazy(() => import('@/pages/OrderConfirmationPage'));
-
-// Orders — ASSUMED to require login ("my orders"). Not yet confirmed by
-// any test; revisit if guest order lookup (email + order id) turns out
-// to be a requirement instead.
 const OrderHistoryPage = lazy(() => import('@/pages/OrderHistoryPage'));
 const OrderDetailPage = lazy(() => import('@/pages/OrderDetailPage'));
 
@@ -48,21 +47,26 @@ const withSuspense = (element: React.ReactNode) => (
 );
 
 const router = createBrowserRouter([
-  // Public shop
+  // Public shop — no guard, no session
   {
     element: <ShopLayout />,
     children: [
       { path: ROUTES.HOME, element: withSuspense(<HomePage />) },
       { path: ROUTES.CATALOG, element: withSuspense(<CatalogPage />) },
       { path: ROUTES.PRODUCT_DETAIL, element: withSuspense(<ProductDetailPage />) },
-      { path: ROUTES.CART, element: withSuspense(<CartPage />) },
-      { path: ROUTES.CHECKOUT, element: withSuspense(<CheckoutPage />) },
-      // Guest-checkout-friendly: not gated behind ProtectedRoute. Revisit
-      // if Chapa's return flow ends up requiring a session.
-      { path: ROUTES.ORDER_CONFIRMATION, element: withSuspense(<OrderConfirmationPage />) },
+    ],
+  },
+
+  // Authenticated shopper — cart onward requires login
+  {
+    element: <ProtectedRoute />,
+    children: [
       {
-        element: <ProtectedRoute />,
+        element: <DashboardLayout />,
         children: [
+          { path: ROUTES.CART, element: withSuspense(<CartPage />) },
+          { path: ROUTES.CHECKOUT, element: withSuspense(<CheckoutPage />) },
+          { path: ROUTES.ORDER_CONFIRMATION, element: withSuspense(<OrderConfirmationPage />) },
           { path: ROUTES.ORDERS, element: withSuspense(<OrderHistoryPage />) },
           { path: ROUTES.ORDER_DETAIL, element: withSuspense(<OrderDetailPage />) },
         ],
@@ -86,12 +90,12 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Admin — reuses DashboardLayout as the admin shell for now
+  // Admin
   {
     element: <AdminRoute />,
     children: [
       {
-        element: <DashboardLayout />,
+        element: <AdminLayout />,
         children: [
           { path: ROUTES.ADMIN_PRODUCTS, element: withSuspense(<AdminProductListPage />) },
           { path: ROUTES.ADMIN_PRODUCT_NEW, element: withSuspense(<AdminProductFormPage />) },

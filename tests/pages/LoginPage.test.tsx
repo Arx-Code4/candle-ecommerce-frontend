@@ -6,23 +6,8 @@ import LoginPage from '@/pages/auth/LoginPage';
 import { useLogin } from '@/hooks/useLogin';
 
 /**
- * TARGET BEHAVIOR (per team decision): LoginPage.tsx currently calls the
- * OLD useAuth().login() inside a try/catch, disabling the button via RHF's
- * own formState.isSubmitting. The minimal, faithful refactor swaps that
- * for useLogin()'s mutateAsync — SAME try/catch shape, same setError('root', ...)
- * on failure — not a rewrite to a different error-handling pattern.
- *
- * DESIGN NOTE — mutateAsync + try/catch, not mutate + {onError}:
- * An earlier draft of this file mocked `mutate` and manually invoked a
- * captured `onError`/`onSuccess` option, assuming the page would pass
- * per-call callbacks. That was an invented pattern with no grounding in
- * the actual source. The real LoginPage.tsx already has a working
- * try/catch around an awaited call — the honest, minimal-diff refactor
- * target is `await mutateAsync(data)` inside that same try/catch, letting
- * a rejection be caught for real. This file now mocks `mutateAsync`
- * directly (resolve/reject) and lets the real onSubmit/catch logic run,
- * rather than simulating it from outside.
- *
+ 
+ 
  * DESIGN NOTE — isPending drives disabled, not RHF's isSubmitting:
  * Per useLogin.test.ts, useLogin's own internal onSuccess already handles
  * setAuth + navigate + redirect logic — the page does nothing further on
