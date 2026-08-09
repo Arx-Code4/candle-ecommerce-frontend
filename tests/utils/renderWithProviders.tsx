@@ -100,6 +100,11 @@ export function mockQueryLoading<TData>(): MockQueryResult<TData> {
  */
 export function mockQueryError<TData>(error: AxiosError | Error): MockQueryResult<TData> {
   const axiosError = error instanceof AxiosError ? error : new AxiosError(error.message);
+  const promise = Promise.reject(axiosError);
+  promise.catch(() => {}); // pre-catch so it never surfaces as an unhandled rejection —
+  // the mock's own consumers never actually await this promise (it exists
+  // only to satisfy TanStack Query's UseQueryResult shape), so nothing
+  // downstream is affected by catching it here.
 
   return {
     ...createBaseMock<TData>(),
@@ -125,13 +130,9 @@ export function mockQueryError<TData>(error: AxiosError | Error): MockQueryResul
     isStale: false,
     isEnabled: true,
     fetchStatus: 'idle' as const,
-    promise: Promise.reject(axiosError),
+    promise,
   } as unknown as MockQueryResult<TData>;
 }
-
-/**
- * Empty data state mock
- */
 export function mockQueryEmpty<TData>(): MockQueryResult<TData> {
   return {
     ...createBaseMock<TData>(),
