@@ -16,7 +16,7 @@ function renderPage() {
   );
 }
 
-describe.skip('OrderConfirmationPage', () => {
+describe('OrderConfirmationPage', () => {
   it('renders the static confirmation message with no API call', () => {
     renderPage();
 

@@ -1,8 +1,12 @@
-// tests/pages/CheckoutPage.test.tsx
 // Source: src/pages/CheckoutPage.tsx
 // Per eco-9.2.3 §9.3 (CheckoutPage.test.tsx). Mocks useCart/useCheckout
 // (not axios) per the guide's page-layer rule (§6.3); also mocks
 // react-router's useNavigate to assert the empty-cart redirect guard.
+//
+// CORRECTED: the 409 error mock now matches the real backend contract
+// (checkout.service.ts + error.middleware.ts) — `errors` is a flat
+// array of pre-formatted strings, not an object nested under
+// `unavailableItems`.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import {
@@ -52,8 +56,7 @@ function mockCheckoutState(overrides: Partial<ReturnType<typeof useCheckout>> = 
   } as ReturnType<typeof useCheckout>);
 }
 
-describe.skip('CheckoutPage', () => {
-  // Clear mocks before each test
+describe('CheckoutPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
@@ -178,7 +181,9 @@ describe.skip('CheckoutPage', () => {
     });
   });
 
-  it('renders unavailableItems inline with a link back to /cart on a 409 conflict, without retrying payment', () => {
+  // CORRECTED: real backend shape — errors is a flat string[], no
+  // productName objects, no unavailableItems nesting.
+  it('renders the conflict errors inline with a link back to /cart on a 409, without retrying payment', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
         items: [{ id: '1', available: true }],
@@ -192,7 +197,7 @@ describe.skip('CheckoutPage', () => {
           status: 409,
           data: {
             message: 'Some items in your cart are no longer available in the requested quantity',
-            unavailableItems: [{ productName: 'Vanilla Candle' }],
+            errors: ['Vanilla Candle (8oz) — requested: 2'],
           },
         },
       },
@@ -217,7 +222,7 @@ describe.skip('CheckoutPage', () => {
       error: {
         response: {
           status: 502,
-          data: { message: 'Unable to reach payment provider, please try again' },
+          data: { message: 'Unable to reach payment provider, please try again', errors: [] },
         },
       },
     } as unknown as ReturnType<typeof useCheckout>);
