@@ -19,6 +19,25 @@ import {
 import CheckoutPage from '@/pages/CheckoutPage';
 import { useCart } from '@/hooks/useCart';
 import { useCheckout } from '@/hooks/useCheckout';
+import type { CartItem } from '@/types';
+
+// Test-only factory: fills in the CartItem fields every one of these tests
+// leaves out (productVariantId, productName, scent, size, unitPrice,
+// quantity) so mockQuerySuccess({ items: [...] }) type-checks against Cart.
+// Pass overrides for the fields a given test actually cares about.
+function makeCartItem(overrides: Partial<CartItem> = {}): CartItem {
+  return {
+    id: '1',
+    productVariantId: 'v1',
+    productName: 'Vanilla Candle',
+    scent: 'vanilla',
+    size: '8oz',
+    unitPrice: '45.00',
+    quantity: 1,
+    available: true,
+    ...overrides,
+  };
+}
 
 vi.mock('@/hooks/useCart');
 vi.mock('@/hooks/useCheckout');
@@ -66,7 +85,7 @@ describe('CheckoutPage', () => {
   it('fetches the cart on mount', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -96,8 +115,8 @@ describe('CheckoutPage', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
         items: [
-          { id: '1', available: false },
-          { id: '2', available: false },
+          makeCartItem({ id: '1', available: false }),
+          makeCartItem({ id: '2', available: false }),
         ],
         total: '0.00',
       })
@@ -113,7 +132,7 @@ describe('CheckoutPage', () => {
   it('renders the shipping form when the cart has at least one available item', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -130,7 +149,7 @@ describe('CheckoutPage', () => {
   it('renders CartSummary in read-only mode (no "Proceed to Checkout" button here)', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -144,7 +163,7 @@ describe('CheckoutPage', () => {
   it('blocks submit with empty shipping fields via client-side validation', async () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -161,7 +180,7 @@ describe('CheckoutPage', () => {
   it('calls useCheckout with the form values on a valid submit', async () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -186,7 +205,7 @@ describe('CheckoutPage', () => {
   it('renders the conflict errors inline with a link back to /cart on a 409, without retrying payment', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -213,7 +232,7 @@ describe('CheckoutPage', () => {
   it('sets a root-level error for other errors (e.g. 502), via a different UI path than the 409 case', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -236,7 +255,7 @@ describe('CheckoutPage', () => {
   it('renders no local success UI and does not navigate/redirect itself — delegated entirely to the hook', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );
@@ -262,7 +281,7 @@ describe('CheckoutPage', () => {
   it('disables the submit button while the checkout mutation is in flight', () => {
     mockedUseCart.mockReturnValue(
       mockQuerySuccess({
-        items: [{ id: '1', available: true }],
+        items: [makeCartItem()],
         total: '45.00',
       })
     );

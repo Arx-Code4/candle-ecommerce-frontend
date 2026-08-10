@@ -23,6 +23,7 @@ const existingProduct: Product = {
   description: 'Smells nice',
   price: 25,
   isPublished: true,
+  primaryPhotoUrl: 'jjj',
   photos: [{ id: 'ph1', url: 'https://example.com/a.jpg', sortOrder: 0 }],
   variants: [{ id: 'v1', scent: 'Vanilla', size: 'Large', stock: 5 }],
 };
