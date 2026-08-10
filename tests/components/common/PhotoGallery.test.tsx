@@ -10,7 +10,7 @@ const photos: ProductPhoto[] = [
   { id: 'ph3', url: 'https://cdn.example.com/p3.jpg', sortOrder: 2 },
 ];
 
-describe.skip('PhotoGallery', () => {
+describe('PhotoGallery', () => {
   it('renders the first photo large by default', () => {
     render(<PhotoGallery photos={photos} />);
     const main = screen.getByRole('img', { name: /main|selected|large|primary/i });
@@ -34,4 +34,3 @@ describe.skip('PhotoGallery', () => {
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
 });
-

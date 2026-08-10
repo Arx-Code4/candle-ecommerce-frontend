@@ -23,7 +23,7 @@ function renderLayout() {
   return render(<RouterProvider router={router} />);
 }
 
-describe.skip('ShopLayout', () => {
+describe('ShopLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useAuthStore).mockImplementation((selector) =>
@@ -47,11 +47,7 @@ describe.skip('ShopLayout', () => {
   it('cart badge shows item count when authenticated with items', () => {
     vi.mocked(useCart).mockReturnValue({
       data: {
-        items: [
-          { id: '1' },
-          { id: '2' },
-          { id: '3' },
-        ],
+        items: [{ id: '1' }, { id: '2' }, { id: '3' }],
         total: '75.00',
       },
       isLoading: false,
@@ -93,4 +89,3 @@ describe.skip('ShopLayout', () => {
     expect(screen.queryByText(/401|unauthorized|error/i)).not.toBeInTheDocument();
   });
 });
-

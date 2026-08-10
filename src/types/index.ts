@@ -50,11 +50,12 @@ export interface ProductVariant {
 export interface Product {
   id: string;
   name: string;
-  description: string;
   price: number;
-  isPublished: boolean;
-  photos: ProductPhoto[];
+  primaryPhotoUrl: string | null;
   variants: ProductVariant[];
+  photos?: ProductPhoto[];
+  description?: string; // detail-only, backend still doesn't return this on either endpoint
+  isPublished?: boolean;
 }
 
 export interface ProductVariantInput {
@@ -72,6 +73,12 @@ export interface ProductFormInput {
   price: number;
   variants: ProductVariantInput[];
   photos: File[]; // required on create (backend enforces min 1 photo); omitted entirely via Partial<> on update to leave existing photos untouched
+}
+export interface ProductFilters {
+  scent?: string;
+  size?: string;
+  page?: number;
+  limit?: number;
 }
 
 export type OrderStatus = 'PROCESSING' | 'SHIPPED';
@@ -103,44 +110,6 @@ export interface OrderSummary {
   totalAmount: string;
   itemCount: number;
   createdAt: string;
-}
-// Product / catalog types
-export interface ProductPhoto {
-  id: string;
-  url: string;
-  sortOrder: number;
-}
-
-export interface ProductVariant {
-  id: string;
-  scent: string;
-  size: string;
-  stock: number;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  isPublished: boolean;
-  photos: ProductPhoto[];
-  variants: ProductVariant[];
-  primaryPhotoUrl?: string;
-}
-
-export interface ProductFilters {
-  scent?: string;
-  size?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  page: number;
-  limit: number;
-  total: number;
 }
 
 // Cart types

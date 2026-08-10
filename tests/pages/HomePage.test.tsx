@@ -15,6 +15,7 @@ function makeProducts(count: number): Product[] {
     description: 'desc',
     price: 20 + i,
     isPublished: true,
+    primaryPhotoUrl: 'hhh',
     photos: [{ id: `ph${i}`, url: `https://cdn.example.com/${i}.jpg`, sortOrder: 0 }],
     variants: [{ id: `v${i}`, scent: 'vanilla', size: 'large', stock: 5 }],
   }));
@@ -28,7 +29,7 @@ function renderPage() {
   );
 }
 
-describe.skip('HomePage', () => {
+describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

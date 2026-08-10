@@ -18,6 +18,7 @@ const products: Product[] = [
     description: 'desc',
     price: 25,
     isPublished: true,
+    primaryPhotoUrl: 'jj',
     photos: [],
     variants: [{ id: 'v1', scent: 'vanilla', size: 'large', stock: 5 }],
   },
@@ -31,7 +32,7 @@ function renderPage() {
   );
 }
 
-describe.skip('CatalogPage', () => {
+describe('CatalogPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useSearchParams).mockReturnValue([

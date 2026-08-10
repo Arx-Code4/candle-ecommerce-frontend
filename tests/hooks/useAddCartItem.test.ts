@@ -13,7 +13,7 @@ vi.mock('@/lib/axios', () => ({
 
 const productVariantId = 'variant-1';
 
-describe.skip('useAddCartItem', () => {
+describe('useAddCartItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -87,4 +87,3 @@ describe.skip('useAddCartItem', () => {
     expect(invalidateSpy).not.toHaveBeenCalled();
   });
 });
-

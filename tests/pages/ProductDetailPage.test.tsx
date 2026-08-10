@@ -70,6 +70,7 @@ const mockProduct: Product = {
   description: 'Warm scent',
   price: 25,
   isPublished: true,
+  primaryPhotoUrl: 'jjj',
   photos: [{ id: 'ph1', url: 'https://cdn.example.com/p1.jpg', sortOrder: 0 }],
   variants: [inStockVariant, outOfStockVariant],
 };
@@ -82,7 +83,7 @@ function renderPage() {
   );
 }
 
-describe.skip('ProductDetailPage', () => {
+describe('ProductDetailPage', () => {
   const navigate = vi.fn();
   const mutate = vi.fn();
 
@@ -207,11 +208,9 @@ describe.skip('ProductDetailPage', () => {
       headers: {},
       config: {} as never,
     };
-    mutate.mockImplementation(
-      (_vars: unknown, opts?: { onError?: (err: AxiosError) => void }) => {
-        opts?.onError?.(error);
-      }
-    );
+    mutate.mockImplementation((_vars: unknown, opts?: { onError?: (err: AxiosError) => void }) => {
+      opts?.onError?.(error);
+    });
     const user = userEvent.setup();
     renderPage();
     variantSelectorMocks.lastOnSelect?.(inStockVariant);
@@ -236,9 +235,7 @@ describe.skip('ProductDetailPage', () => {
 
     expect(mutate).not.toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith(
-      expect.stringMatching(
-        /\/login\?.*pendingVariantId=v1.*redirect=/
-      )
+      expect.stringMatching(/\/login\?.*pendingVariantId=v1.*redirect=/)
     );
   });
 

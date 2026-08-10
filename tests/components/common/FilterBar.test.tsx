@@ -9,7 +9,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...actual, useSearchParams: vi.fn() };
 });
 
-describe.skip('FilterBar', () => {
+describe('FilterBar', () => {
   const setSearchParams = vi.fn();
 
   beforeEach(() => {
@@ -76,4 +76,3 @@ describe.skip('FilterBar', () => {
     expect(params.get('page')).toBe('2');
   });
 });
-
