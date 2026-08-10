@@ -43,7 +43,7 @@ const baseOrder = {
   createdAt: '2026-07-01T10:00:00.000Z',
 };
 
-describe.skip('OrderDetailPage', () => {
+describe('OrderDetailPage', () => {
   it('fetches the order using the route id', () => {
     mockedUseOrder.mockReturnValue({
       data: baseOrder,

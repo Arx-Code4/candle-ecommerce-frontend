@@ -1,4 +1,3 @@
-// src/hooks/useCheckout.ts
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import api from '@/lib/axios';
@@ -19,6 +18,11 @@ export function useCheckout() {
     mutationFn: async (data: ShippingFields) => {
       const response = await api.post('/checkout', data);
       return response.data;
+    },
+    onSuccess: (data) => {
+      // Chapa's hosted checkout is a full page redirect, not an SPA route —
+      // window.location.href (not react-router's navigate) is correct here.
+      window.location.href = data.chapaCheckoutUrl;
     },
   });
 }

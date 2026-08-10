@@ -17,7 +17,7 @@ const incompleteVariants: ProductVariant[] = [
   { id: 'v3', scent: 'lavender', size: 'small', stock: 2 },
 ];
 
-describe.skip('VariantSelector', () => {
+describe('VariantSelector', () => {
   const onSelect = vi.fn();
 
   beforeEach(() => {
@@ -64,9 +64,7 @@ describe.skip('VariantSelector', () => {
   });
 
   it('single-variant product auto-selects on mount', () => {
-    const single: ProductVariant[] = [
-      { id: 'only', scent: 'vanilla', size: 'large', stock: 4 },
-    ];
+    const single: ProductVariant[] = [{ id: 'only', scent: 'vanilla', size: 'large', stock: 4 }];
     render(<VariantSelector variants={single} onSelect={onSelect} />);
     expect(onSelect).toHaveBeenCalledWith(single[0]);
   });
@@ -89,4 +87,3 @@ describe.skip('VariantSelector', () => {
     expect(large).toBeDisabled();
   });
 });
-

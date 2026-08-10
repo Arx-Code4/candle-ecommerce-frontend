@@ -83,7 +83,7 @@ function renderPage() {
   );
 }
 
-describe.skip('CartPage', () => {
+describe('CartPage', () => {
   const navigate = vi.fn();
 
   beforeEach(() => {

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import StockBadge from '@/components/common/StockBadge';
 
-describe.skip('StockBadge', () => {
+describe('StockBadge', () => {
   it('positive stock renders "In Stock"', () => {
     render(<StockBadge stock={5} />);
     expect(screen.getByText('In Stock')).toBeInTheDocument();
@@ -24,4 +24,3 @@ describe.skip('StockBadge', () => {
     expect(oversold.className).not.toBe(outOfStockClass);
   });
 });
-

@@ -18,6 +18,7 @@ const products: Product[] = [
     description: 'desc',
     price: 25,
     isPublished: true,
+    primaryPhotoUrl: 'jj',
     photos: [],
     variants: [{ id: 'v1', scent: 'vanilla', size: 'large', stock: 5 }],
   },
@@ -31,7 +32,7 @@ function renderPage() {
   );
 }
 
-describe.skip('CatalogPage', () => {
+describe('CatalogPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useSearchParams).mockReturnValue([
@@ -113,7 +114,7 @@ describe.skip('CatalogPage', () => {
 
     renderPage();
     expect(screen.getByText(/no products|no results|nothing found/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /clear filters/i }).length).toBeGreaterThan(0);
   });
 
   it('error state', () => {

@@ -12,7 +12,7 @@ vi.mock('@/lib/axios', () => ({
 
 const itemId = 'item-1';
 
-describe.skip('useUpdateCartItem', () => {
+describe('useUpdateCartItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -61,4 +61,3 @@ describe.skip('useUpdateCartItem', () => {
     expect(result.current.data?.cappedTo).toBe(5);
   });
 });
-

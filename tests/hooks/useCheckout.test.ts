@@ -4,13 +4,9 @@
 //
 // ASSUMPTION FLAGGED — window.location shim: neither eco-9 nor the
 // Frontend Testing Guide specifies a concrete shim implementation for
-// jsdom's non-assignable native `location` object (the guide's own
-// Section 6.6 example only covers the axios interceptor's 401 redirect
-// conceptually, without a reusable shim). The shim below is a local,
-// test-file-scoped convention — redefine `window.location` as a plain
-// configurable object before each test and restore it after — not a
-// documented team utility. Worth raising at review; if this pattern
-// gets reused by another test, it should move to tests/utils/.
+// jsdom's non-assignable native `location` object. The shim below is a
+// local, test-file-scoped convention — redefine `window.location` as a
+// plain configurable object before each test and restore it after.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -39,13 +35,10 @@ const shippingFields = {
 
 let originalLocation: Location;
 
-describe.skip('useCheckout', () => {
+describe('useCheckout', () => {
   beforeEach(() => {
     mockedPost.mockReset();
     originalLocation = window.location;
-    // Local shim: jsdom's real `location` doesn't allow plain assignment
-    // to `.href`, so replace it with a configurable plain object for the
-    // duration of each test.
     Object.defineProperty(window, 'location', {
       configurable: true,
       value: { ...originalLocation, href: '' },
@@ -80,22 +73,24 @@ describe.skip('useCheckout', () => {
     result.current.mutate(shippingFields);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    // Assert the actual value that was set, not merely that "some
-    // navigation-like function" was called (per the guide's coverage-
-    // honesty note, eco-9 §9.4).
     expect(window.location.href).toBe('https://chapa.example/pay/xyz');
   });
 
-  it('passes a 409 stock-conflict error through untouched, with unavailableItems intact', async () => {
+  // CORRECTED: matches the real backend contract — checkout.service.ts
+  // throws ApiError(409, message, errors) where `errors` is a flat
+  // array of pre-formatted strings (e.g. "Amber Terracotta (8oz) —
+  // requested: 2"), and error.middleware.ts puts that array directly
+  // on response.errors with no extra nesting.
+  it('passes a 409 stock-conflict error through untouched, with the errors array intact', async () => {
     const conflictError = new AxiosError('Conflict');
-    const unavailableItems = [{ productVariantId: 'variant-1', currentStock: 0 }];
+    const unavailableItems = ['Amber Terracotta (8oz) — requested: 2'];
     conflictError.response = {
       status: 409,
       data: {
         statusCode: 409,
         success: false,
         message: 'Some items in your cart are no longer available in the requested quantity',
-        errors: { unavailableItems },
+        errors: unavailableItems,
       },
     } as AxiosError['response'];
     mockedPost.mockRejectedValueOnce(conflictError);
@@ -104,8 +99,8 @@ describe.skip('useCheckout', () => {
     result.current.mutate(shippingFields);
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    const err = result.current.error as AxiosError<{ errors: { unavailableItems: unknown } }>;
-    expect(err.response?.data.errors.unavailableItems).toEqual(unavailableItems);
+    const err = result.current.error as AxiosError<{ errors: string[] }>;
+    expect(err.response?.data.errors).toEqual(unavailableItems);
   });
 
   it('passes other errors (e.g. 502) through the same way, with no redirect', async () => {
@@ -116,7 +111,7 @@ describe.skip('useCheckout', () => {
         statusCode: 502,
         success: false,
         message: 'Unable to reach payment provider, please try again',
-        errors: null,
+        errors: [],
       },
     } as AxiosError['response'];
     mockedPost.mockRejectedValueOnce(serverError);
