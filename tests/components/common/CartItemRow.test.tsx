@@ -20,7 +20,7 @@ const baseItem: CartItem = {
   available: true,
 };
 
-describe.skip('CartItemRow', () => {
+describe('CartItemRow', () => {
   const updateMutate = vi.fn();
   const removeMutate = vi.fn();
 
@@ -47,14 +47,14 @@ describe.skip('CartItemRow', () => {
     const user = userEvent.setup();
     render(<CartItemRow item={baseItem} />);
     await user.click(screen.getByRole('button', { name: /\+|increase|increment/i }));
-    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 3 });
+    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 3 }, expect.anything());
   });
 
   it('clicking − calls useUpdateCartItem with decremented quantity', async () => {
     const user = userEvent.setup();
     render(<CartItemRow item={baseItem} />);
     await user.click(screen.getByRole('button', { name: /−|-|decrease|decrement/i }));
-    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 1 });
+    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 1 }, expect.anything());
   });
 
   it('optimistic local echo updates the displayed quantity immediately', async () => {
@@ -77,21 +77,20 @@ describe.skip('CartItemRow', () => {
   });
 
   it('unavailable item renders greyed out with only a remove action', () => {
-    const { container } = render(
-      <CartItemRow item={{ ...baseItem, available: false }} />
-    );
-    expect(screen.queryByRole('button', { name: /\+|increase|increment/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /−|-|decrease|decrement/i })).not.toBeInTheDocument();
+    const { container } = render(<CartItemRow item={{ ...baseItem, available: false }} />);
+    expect(
+      screen.queryByRole('button', { name: /\+|increase|increment/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /−|-|decrease|decrement/i })
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument();
     expect(container.firstChild).toHaveClass(/opacity|muted|unavailable|grey|gray/i);
   });
 
   it('wasCapped true shows a row-local toast', async () => {
     updateMutate.mockImplementation(
-      (
-        _vars: unknown,
-        opts?: { onSuccess?: (data: CartMutationResult) => void }
-      ) => {
+      (_vars: unknown, opts?: { onSuccess?: (data: CartMutationResult) => void }) => {
         opts?.onSuccess?.({ cartTotal: '50.00', wasCapped: true, cappedTo: 5 });
       }
     );
@@ -101,7 +100,7 @@ describe.skip('CartItemRow', () => {
     await user.click(screen.getByRole('button', { name: /\+|increase|increment/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/capped|adjusted|5/i)).toBeInTheDocument();
+      expect(screen.getByText(/adjusted to available stock/i)).toBeInTheDocument();
     });
   });
 
@@ -129,4 +128,3 @@ describe.skip('CartItemRow', () => {
     expect(updateMutate).toHaveBeenCalledTimes(1);
   });
 });
-

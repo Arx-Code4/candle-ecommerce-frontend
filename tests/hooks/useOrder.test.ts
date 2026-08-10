@@ -44,7 +44,7 @@ const mockOrderDetail = {
   createdAt: '2026-07-01T10:00:00.000Z',
 };
 
-describe.skip('useOrder', () => {
+describe('useOrder', () => {
   beforeEach(() => {
     mockedGet.mockReset();
   });

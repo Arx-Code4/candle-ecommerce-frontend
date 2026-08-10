@@ -17,7 +17,7 @@ const mockPage: PaginatedResult<Product> = {
   total: 0,
 };
 
-describe.skip('useProducts', () => {
+describe('useProducts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -25,10 +25,9 @@ describe.skip('useProducts', () => {
   it('fetches with the given filters', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: mockPage });
     const { Wrapper } = createQueryWrapper();
-    const { result } = renderHook(
-      () => useProducts({ scent: 'vanilla', page: 2, limit: 20 }),
-      { wrapper: Wrapper }
-    );
+    const { result } = renderHook(() => useProducts({ scent: 'vanilla', page: 2, limit: 20 }), {
+      wrapper: Wrapper,
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(api.get).toHaveBeenCalledWith('/products', {
@@ -40,10 +39,10 @@ describe.skip('useProducts', () => {
     vi.mocked(api.get).mockResolvedValue({ data: mockPage });
     const { Wrapper, queryClient } = createQueryWrapper();
 
-    const { result, rerender } = renderHook(
-      (filters: { scent?: string }) => useProducts(filters),
-      { wrapper: Wrapper, initialProps: { scent: 'vanilla' } }
-    );
+    const { result, rerender } = renderHook((filters: { scent?: string }) => useProducts(filters), {
+      wrapper: Wrapper,
+      initialProps: { scent: 'vanilla' },
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(queryClient.getQueryData([QUERY_KEYS.PRODUCTS, { scent: 'vanilla' }])).toBeDefined();
@@ -72,4 +71,3 @@ describe.skip('useProducts', () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
-

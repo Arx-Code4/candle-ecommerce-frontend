@@ -47,7 +47,7 @@ const orders = [
   },
 ];
 
-describe.skip('OrderHistoryPage', () => {
+describe('OrderHistoryPage', () => {
   it('renders one OrderCard per order', () => {
     mockedUseOrders.mockReturnValue(mockQuerySuccess({ items: orders }));
 

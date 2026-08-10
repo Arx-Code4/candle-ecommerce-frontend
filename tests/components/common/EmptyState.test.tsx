@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import EmptyState from '@/components/common/EmptyState';
 
-describe.skip('EmptyState', () => {
+describe('EmptyState', () => {
   it('renders message only when no CTA given', () => {
     render(<EmptyState message="No products found" />);
     expect(screen.getByText('No products found')).toBeInTheDocument();
@@ -21,4 +21,3 @@ describe.skip('EmptyState', () => {
     expect(link).toHaveAttribute('href', '/products');
   });
 });
-

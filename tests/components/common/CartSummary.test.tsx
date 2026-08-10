@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import CartSummary from '@/components/common/CartSummary';
 
-describe.skip('CartSummary', () => {
+describe('CartSummary', () => {
   it('displays total and item count as received', () => {
     render(<CartSummary total="900.00" itemCount={3} />);
     expect(screen.getByText('900.00')).toBeInTheDocument();
@@ -23,9 +23,6 @@ describe.skip('CartSummary', () => {
 
   it('readOnly true renders no button', () => {
     render(<CartSummary total="900.00" itemCount={3} readOnly />);
-    expect(
-      screen.queryByRole('button', { name: /proceed to checkout/i })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /proceed to checkout/i })).not.toBeInTheDocument();
   });
 });
-
