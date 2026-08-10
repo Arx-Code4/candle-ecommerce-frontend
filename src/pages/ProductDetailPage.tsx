@@ -1,4 +1,3 @@
-// src/pages/ProductDetailPage.tsx
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/useProduct';
@@ -19,6 +18,10 @@ export default function ProductDetailPage() {
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
+  // Decoupled from `quantity` so the field can sit empty while the user is
+  // typing/clearing, instead of a controlled value snapping back to "1"
+  // and causing the next digit to concatenate onto it (e.g. "1" -> "12").
+  const [quantityInput, setQuantityInput] = useState('1');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -89,8 +92,19 @@ export default function ProductDetailPage() {
             id="quantity"
             type="number"
             min={1}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+            value={quantityInput}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setQuantityInput(raw);
+              const parsed = Number(raw);
+              if (raw !== '' && !Number.isNaN(parsed)) setQuantity(Math.max(1, parsed));
+            }}
+            onBlur={() => {
+              const parsed = Number(quantityInput);
+              const clamped = Number.isNaN(parsed) ? 1 : Math.max(1, parsed);
+              setQuantity(clamped);
+              setQuantityInput(String(clamped));
+            }}
             className="w-16 rounded-md border border-input px-2 py-1 text-sm"
           />
         </div>

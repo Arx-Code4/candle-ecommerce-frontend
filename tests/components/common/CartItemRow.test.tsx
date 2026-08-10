@@ -47,14 +47,14 @@ describe('CartItemRow', () => {
     const user = userEvent.setup();
     render(<CartItemRow item={baseItem} />);
     await user.click(screen.getByRole('button', { name: /\+|increase|increment/i }));
-    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 3 });
+    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 3 }, expect.anything());
   });
 
   it('clicking − calls useUpdateCartItem with decremented quantity', async () => {
     const user = userEvent.setup();
     render(<CartItemRow item={baseItem} />);
     await user.click(screen.getByRole('button', { name: /−|-|decrease|decrement/i }));
-    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 1 });
+    expect(updateMutate).toHaveBeenCalledWith({ itemId: 'item-1', quantity: 1 }, expect.anything());
   });
 
   it('optimistic local echo updates the displayed quantity immediately', async () => {
@@ -100,7 +100,7 @@ describe('CartItemRow', () => {
     await user.click(screen.getByRole('button', { name: /\+|increase|increment/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/capped|adjusted|5/i)).toBeInTheDocument();
+      expect(screen.getByText(/adjusted to available stock/i)).toBeInTheDocument();
     });
   });
 

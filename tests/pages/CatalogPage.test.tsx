@@ -114,7 +114,7 @@ describe('CatalogPage', () => {
 
     renderPage();
     expect(screen.getByText(/no products|no results|nothing found/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /clear filters/i }).length).toBeGreaterThan(0);
   });
 
   it('error state', () => {

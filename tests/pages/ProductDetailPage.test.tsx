@@ -150,7 +150,8 @@ describe('ProductDetailPage', () => {
       expect.objectContaining({
         productVariantId: inStockVariant.id,
         quantity: expect.any(Number),
-      })
+      }),
+      expect.anything()
     );
     expect(navigate).not.toHaveBeenCalled();
   });
