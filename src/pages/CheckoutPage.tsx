@@ -7,7 +7,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import { useCheckout } from '@/hooks/useCheckout';
 import CartSummary from '@/components/common/CartSummary';
-import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants';
 
 const shippingSchema = z.object({
@@ -156,9 +155,14 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={checkout.isPending} className="mt-2">
+        <button
+          type="submit"
+          disabled={checkout.isPending}
+          className="mt-2 w-full rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
+        >
           {checkout.isPending ? 'Pay with Chapa…' : 'Pay with Chapa'}
-        </Button>
+        </button>
+        <p className="text-center text-xs text-muted-foreground">Secure transaction via Chapa</p>
       </form>
     </div>
   );

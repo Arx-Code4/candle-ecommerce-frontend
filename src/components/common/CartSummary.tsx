@@ -27,7 +27,11 @@ const CartSummary: FC<CartSummaryProps> = ({ total, itemCount, readOnly = false,
       </div>
 
       {!readOnly && (
-        <Button className="w-full mt-4" disabled={itemCount === 0} onClick={onCheckout}>
+        <Button
+          className="w-full mt-4 rounded-full"
+          disabled={itemCount === 0}
+          onClick={onCheckout}
+        >
           Proceed to Checkout
         </Button>
       )}
