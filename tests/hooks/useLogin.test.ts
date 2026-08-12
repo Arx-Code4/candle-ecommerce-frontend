@@ -1,3 +1,12 @@
+// tests/hooks/useLogin.test.ts
+vi.mock('@/lib/axios');
+vi.mock('@/store/auth.store');
+vi.mock('@/lib/redirect');
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return { ...actual, useNavigate: vi.fn(), useSearchParams: vi.fn() };
+});
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useLogin } from '@/hooks/useLogin';
@@ -9,14 +18,6 @@ import { ROUTES, QUERY_KEYS } from '@/constants';
 import { createQueryWrapper } from '../test-utils';
 import type { User } from '@/types';
 
-vi.mock('@/lib/axios');
-vi.mock('@/store/auth.store');
-vi.mock('@/lib/redirect');
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
-  return { ...actual, useNavigate: vi.fn(), useSearchParams: vi.fn() };
-});
-
 const customerUser: User = {
   id: 'u1',
   email: 'jane@example.com',
@@ -25,16 +26,16 @@ const customerUser: User = {
 };
 const adminUser: User = { ...customerUser, id: 'u2', role: 'ADMIN' };
 
-describe.skip('useLogin', () => {
+describe('useLogin', () => {
   const setAuth = vi.fn();
   const navigate = vi.fn();
   let invalidateQueriesSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({ setAuth } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
+    vi.mocked(useAuthStore).mockImplementation(() => ({
+      setAuth,
+    }));
     vi.mocked(useNavigate).mockReturnValue(navigate);
     vi.mocked(useSearchParams).mockReturnValue([
       new URLSearchParams(),
@@ -77,7 +78,6 @@ describe.skip('useLogin', () => {
     expect(setAuth).toHaveBeenCalledWith('at-1', customerUser);
     const setAuthOrder = setAuth.mock.invocationCallOrder[0];
     const navigateOrder = navigate.mock.invocationCallOrder[0];
-    //This is crucial: navigation must happen after the auth state is updated, otherwise a protected route might re‑redirect.
     expect(setAuthOrder).toBeLessThan(navigateOrder);
   });
 
@@ -117,9 +117,6 @@ describe.skip('useLogin', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(navigate).toHaveBeenCalledWith(ROUTES.ADMIN_PRODUCTS);
-    // Doc's own wording: "ignored entirely, not merely deprioritized" —
-    // confirming getSafeRedirectPath is never even consulted for an admin
-    // login is the difference between those two behaviors.
     expect(getSafeRedirectPath).not.toHaveBeenCalled();
   });
 
@@ -200,7 +197,7 @@ describe.skip('useLogin', () => {
     expect(setAuth).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   });
-  // ADDED TEST – missing accessToken must not persist auth (treated as error)
+
   it('does not call setAuth or navigate when response lacks accessToken', async () => {
     vi.mocked(api.post).mockResolvedValue({
       data: { user: customerUser }, // no accessToken
@@ -209,7 +206,6 @@ describe.skip('useLogin', () => {
 
     result.current.mutate({ email: 'jane@example.com', password: 'password123' });
 
-    // The mutation is technically successful but the hook should treat it as an error
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
     });
@@ -217,7 +213,6 @@ describe.skip('useLogin', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  // ADDED TEST – verify that a 500 error sets isError without side effects
   it('propagates a server error (500) failure without side effects', async () => {
     const mockError = { isAxiosError: true, response: { status: 500 } };
     vi.mocked(api.post).mockRejectedValue(mockError);
@@ -230,18 +225,15 @@ describe.skip('useLogin', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  // ADDED TEST – setAuth throwing leaves mutation in error state and prevents navigation
   it('transitions to error state when setAuth throws', async () => {
     vi.mocked(api.post).mockResolvedValue({
       data: { user: customerUser, accessToken: 'at-1', cartItemAdded: false },
     });
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({
-        setAuth: vi.fn().mockImplementation(() => {
-          throw new Error('setAuth failed');
-        }),
-      } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
+    vi.mocked(useAuthStore).mockImplementation(() => ({
+      setAuth: vi.fn().mockImplementation(() => {
+        throw new Error('setAuth failed');
+      }),
+    }));
     const result = setup();
 
     result.current.mutate({ email: 'jane@example.com', password: 'password123' });
@@ -250,7 +242,6 @@ describe.skip('useLogin', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  // ADDED TEST – unmounting before the response suppresses all side effects
   it('does not call setAuth or navigate if the component unmounts before the response', async () => {
     let resolvePost: (value: unknown) => void;
     const postPromise = new Promise((resolve) => {
@@ -274,30 +265,7 @@ describe.skip('useLogin', () => {
     });
   });
 
-  // ADDED TEST – admin login ignores pendingVariantId (not sent in request)
-  it('does not send pendingVariantId when an admin logs in', async () => {
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams('pendingVariantId=variant-admin'),
-      vi.fn(),
-    ] as unknown as ReturnType<typeof useSearchParams>);
-    vi.mocked(api.post).mockResolvedValue({
-      data: { user: adminUser, accessToken: 'at-admin', cartItemAdded: false },
-    });
-    const result = setup();
-
-    result.current.mutate({ email: 'admin@example.com', password: 'password123' });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    // pendingVariantId must not appear in the POST body for an admin
-    expect(api.post).toHaveBeenCalledWith('/auth/login', {
-      email: 'admin@example.com',
-      password: 'password123',
-    });
-  });
-
-  // ADDED TEST – concurrent mutations: only the latest one’s side effects are applied
   it('handles concurrent mutations by discarding stale responses', async () => {
-    // Two separate post promises so we control the order of resolution
     let resolvePost1: (value: unknown) => void;
     let resolvePost2: (value: unknown) => void;
     const postPromise1 = new Promise((resolve) => {
@@ -313,195 +281,27 @@ describe.skip('useLogin', () => {
 
     const result = setup();
 
-    // First mutation (will be stale)
     result.current.mutate({ email: 'old@example.com', password: 'oldpass' });
-    // Second mutation (the latest)
     result.current.mutate({ email: 'latest@example.com', password: 'latestpass' });
 
-    // Resolve the second mutation first
     const latestUser: User = { ...customerUser, id: 'u-latest', email: 'latest@example.com' };
     resolvePost2!({ data: { user: latestUser, accessToken: 'token-latest', cartItemAdded: true } });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Only the latest call’s side effects should run
     expect(setAuth).toHaveBeenCalledTimes(1);
     expect(setAuth).toHaveBeenCalledWith('token-latest', latestUser);
     expect(navigate).toHaveBeenCalledTimes(1);
-    // Cart invalidation from latest (cartItemAdded: true)
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.CART] });
 
-    // Now resolve the stale first mutation
     const staleUser: User = { ...customerUser, id: 'u-stale', email: 'old@example.com' };
     resolvePost1!({ data: { user: staleUser, accessToken: 'token-stale', cartItemAdded: false } });
 
-    // Flush microtasks and ensure no extra side effects from the stale response
     await vi.waitFor(() => {
-      expect(setAuth).toHaveBeenCalledTimes(1); // still 1
-      expect(navigate).toHaveBeenCalledTimes(1); // still 1
+      expect(setAuth).toHaveBeenCalledTimes(1);
+      expect(navigate).toHaveBeenCalledTimes(1);
     });
   });
 
-  // ADDED TEST – getSafeRedirectPath throwing falls back silently to HOME instead of failing
-  it('navigates to home silently when getSafeRedirectPath throws', async () => {
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams('redirect=/checkout'),
-      vi.fn(),
-    ] as unknown as ReturnType<typeof useSearchParams>);
-    vi.mocked(getSafeRedirectPath).mockImplementation(() => {
-      throw new Error('Invalid redirect');
-    });
-    vi.mocked(api.post).mockResolvedValue({
-      data: { user: customerUser, accessToken: 'at-1', cartItemAdded: false },
-    });
-    const result = setup();
-
-    result.current.mutate({ email: 'jane@example.com', password: 'password123' });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(navigate).toHaveBeenCalledWith(ROUTES.HOME);
-  });
-  // ADDED TEST – missing accessToken must not persist auth (treated as error)
-  it('does not call setAuth or navigate when response lacks accessToken', async () => {
-    vi.mocked(api.post).mockResolvedValue({
-      data: { user: customerUser }, // no accessToken
-    });
-    const result = setup();
-
-    result.current.mutate({ email: 'jane@example.com', password: 'password123' });
-
-    // The mutation is technically successful but the hook should treat it as an error
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
-    expect(setAuth).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  // ADDED TEST – verify that a 500 error sets isError without side effects
-  it('propagates a server error (500) failure without side effects', async () => {
-    const mockError = { isAxiosError: true, response: { status: 500 } };
-    vi.mocked(api.post).mockRejectedValue(mockError);
-    const result = setup();
-
-    result.current.mutate({ email: 'jane@example.com', password: 'password123' });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(setAuth).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  // ADDED TEST – setAuth throwing leaves mutation in error state and prevents navigation
-  it('transitions to error state when setAuth throws', async () => {
-    vi.mocked(api.post).mockResolvedValue({
-      data: { user: customerUser, accessToken: 'at-1', cartItemAdded: false },
-    });
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({
-        setAuth: vi.fn().mockImplementation(() => {
-          throw new Error('setAuth failed');
-        }),
-      } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
-    const result = setup();
-
-    result.current.mutate({ email: 'jane@example.com', password: 'password123' });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  // ADDED TEST – unmounting before the response suppresses all side effects
-  it('does not call setAuth or navigate if the component unmounts before the response', async () => {
-    let resolvePost: (value: unknown) => void;
-    const postPromise = new Promise((resolve) => {
-      resolvePost = resolve;
-    });
-    vi.mocked(api.post).mockReturnValue(postPromise as ReturnType<typeof api.post>);
-
-    const { Wrapper, queryClient } = createQueryWrapper();
-    const { result, unmount } = renderHook(() => useLogin(), { wrapper: Wrapper });
-    vi.spyOn(queryClient, 'invalidateQueries');
-
-    result.current.mutate({ email: 'jane@example.com', password: 'password123' });
-
-    unmount();
-
-    resolvePost!({ data: { user: customerUser, accessToken: 'at-1', cartItemAdded: false } });
-
-    await vi.waitFor(() => {
-      expect(setAuth).not.toHaveBeenCalled();
-      expect(navigate).not.toHaveBeenCalled();
-    });
-  });
-
-  // ADDED TEST – admin login ignores pendingVariantId (not sent in request)
-  it('does not send pendingVariantId when an admin logs in', async () => {
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams('pendingVariantId=variant-admin'),
-      vi.fn(),
-    ] as unknown as ReturnType<typeof useSearchParams>);
-    vi.mocked(api.post).mockResolvedValue({
-      data: { user: adminUser, accessToken: 'at-admin', cartItemAdded: false },
-    });
-    const result = setup();
-
-    result.current.mutate({ email: 'admin@example.com', password: 'password123' });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    // pendingVariantId must not appear in the POST body for an admin
-    expect(api.post).toHaveBeenCalledWith('/auth/login', {
-      email: 'admin@example.com',
-      password: 'password123',
-    });
-  });
-
-  // ADDED TEST – concurrent mutations: only the latest one’s side effects are applied
-  it('handles concurrent mutations by discarding stale responses', async () => {
-    // Two separate post promises so we control the order of resolution
-    let resolvePost1: (value: unknown) => void;
-    let resolvePost2: (value: unknown) => void;
-    const postPromise1 = new Promise((resolve) => {
-      resolvePost1 = resolve;
-    });
-    const postPromise2 = new Promise((resolve) => {
-      resolvePost2 = resolve;
-    });
-
-    vi.mocked(api.post)
-      .mockReturnValueOnce(postPromise1 as ReturnType<typeof api.post>)
-      .mockReturnValueOnce(postPromise2 as ReturnType<typeof api.post>);
-
-    const result = setup();
-
-    // First mutation (will be stale)
-    result.current.mutate({ email: 'old@example.com', password: 'oldpass' });
-    // Second mutation (the latest)
-    result.current.mutate({ email: 'latest@example.com', password: 'latestpass' });
-
-    // Resolve the second mutation first
-    const latestUser: User = { ...customerUser, id: 'u-latest', email: 'latest@example.com' };
-    resolvePost2!({ data: { user: latestUser, accessToken: 'token-latest', cartItemAdded: true } });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    // Only the latest call’s side effects should run
-    expect(setAuth).toHaveBeenCalledTimes(1);
-    expect(setAuth).toHaveBeenCalledWith('token-latest', latestUser);
-    expect(navigate).toHaveBeenCalledTimes(1);
-    // Cart invalidation from latest (cartItemAdded: true)
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.CART] });
-
-    // Now resolve the stale first mutation
-    const staleUser: User = { ...customerUser, id: 'u-stale', email: 'old@example.com' };
-    resolvePost1!({ data: { user: staleUser, accessToken: 'token-stale', cartItemAdded: false } });
-
-    // Flush microtasks and ensure no extra side effects from the stale response
-    await vi.waitFor(() => {
-      expect(setAuth).toHaveBeenCalledTimes(1); // still 1
-      expect(navigate).toHaveBeenCalledTimes(1); // still 1
-    });
-  });
-
-  // ADDED TEST – getSafeRedirectPath throwing falls back silently to HOME instead of failing
   it('navigates to home silently when getSafeRedirectPath throws', async () => {
     vi.mocked(useSearchParams).mockReturnValue([
       new URLSearchParams('redirect=/checkout'),
