@@ -26,7 +26,7 @@ function wrapper({ children }: { children: ReactNode }) {
 // template's contract (v3 docs, Section 7.1) and the Testing Guide's
 // Section 6.2 rule — hook tests never assert on/mock the raw envelope.
 
-describe.skip('useOrders', () => {
+describe('useOrders', () => {
   beforeEach(() => {
     mockedGet.mockReset();
   });

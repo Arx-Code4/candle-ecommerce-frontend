@@ -20,15 +20,12 @@ function renderCard(overrides: Partial<Parameters<typeof ProductCard>[0]> = {}) 
   );
 }
 
-describe.skip('ProductCard', () => {
+describe('ProductCard', () => {
   it('renders name, price, photo', () => {
     renderCard();
     expect(screen.getByText('Vanilla Candle')).toBeInTheDocument();
     expect(screen.getByText(/25/)).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAttribute(
-      'src',
-      'https://cdn.example.com/vanilla.jpg'
-    );
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://cdn.example.com/vanilla.jpg');
   });
 
   it('links to the product detail route', () => {
@@ -57,4 +54,3 @@ describe.skip('ProductCard', () => {
     expect(screen.getByText('Out of Stock')).toBeInTheDocument();
   });
 });
-

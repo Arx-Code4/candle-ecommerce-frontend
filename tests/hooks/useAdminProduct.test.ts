@@ -13,6 +13,7 @@ const mockProduct: Product = {
   description: 'Nice',
   price: 25,
   isPublished: false,
+  primaryPhotoUrl: 'jjj',
   photos: [],
   variants: [],
 };

@@ -41,6 +41,7 @@ const mockProduct: Product = {
   description: 'Smells nice',
   price: 25,
   isPublished: true,
+  primaryPhotoUrl: 'jjj',
   photos: [],
   variants: [{ id: 'v1', scent: 'Vanilla', size: 'Large', stock: 5 }],
 };

@@ -26,15 +26,22 @@ function renderCard(order: OrderSummary) {
   );
 }
 
-describe.skip('OrderCard', () => {
+describe('OrderCard', () => {
   it('renders date, item count, total, and status badge', () => {
     renderCard(baseOrder);
 
+    // Check total amount (number only)
     expect(screen.getByText('45.00')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('Processing')).toBeInTheDocument();
-    // date rendering: assert something derived from createdAt is present,
-    // without over-specifying exact formatting here.
+    // Optionally verify "ETB" is present
+    expect(screen.getByText('ETB')).toBeInTheDocument();
+
+    // Item count (whole phrase)
+    expect(screen.getByText('2 items')).toBeInTheDocument();
+
+    // Status (case‑insensitive)
+    expect(screen.getByText(/processing/i)).toBeInTheDocument();
+
+    // Date (year present)
     expect(screen.getByText(/2026/)).toBeInTheDocument();
   });
 

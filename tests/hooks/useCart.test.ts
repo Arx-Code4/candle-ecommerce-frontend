@@ -14,7 +14,7 @@ vi.mock('@/store/auth.store');
 
 const mockCart: Cart = { items: [], total: '0.00' };
 
-describe.skip('useCart', () => {
+describe('useCart', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -57,4 +57,3 @@ describe.skip('useCart', () => {
     expect(queryClient.getQueryData([QUERY_KEYS.CART])).toBeDefined();
   });
 });
-

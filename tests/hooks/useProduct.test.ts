@@ -17,11 +17,12 @@ const mockProduct: Product = {
   description: 'Warm vanilla',
   price: 25,
   isPublished: true,
+  primaryPhotoUrl: 'jjj',
   photos: [],
   variants: [],
 };
 
-describe.skip('useProduct', () => {
+describe('useProduct', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -56,7 +57,13 @@ describe.skip('useProduct', () => {
 
   it('404 surfaces as an error state', async () => {
     const error = new AxiosError('Not Found');
-    error.response = { status: 404, data: {}, statusText: 'Not Found', headers: {}, config: {} as never };
+    error.response = {
+      status: 404,
+      data: {},
+      statusText: 'Not Found',
+      headers: {},
+      config: {} as never,
+    };
     vi.mocked(api.get).mockRejectedValue(error);
 
     const { Wrapper } = createQueryWrapper();
@@ -67,4 +74,3 @@ describe.skip('useProduct', () => {
     expect((result.current.error as AxiosError).response?.status).toBe(404);
   });
 });
-

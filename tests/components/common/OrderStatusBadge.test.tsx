@@ -16,7 +16,7 @@ import { describe, it, expect } from 'vitest';
 import { renderWithProviders, screen } from '../../utils/renderWithProviders';
 import OrderStatusBadge from '@/components/common/OrderStatusBadge';
 
-describe.skip('OrderStatusBadge', () => {
+describe('OrderStatusBadge', () => {
   it('renders an amber "Processing" pill for PROCESSING', () => {
     renderWithProviders(<OrderStatusBadge status="PROCESSING" />);
 
