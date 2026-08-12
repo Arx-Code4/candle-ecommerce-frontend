@@ -1,43 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { MemoryRouter, useNavigate, useSearchParams } from 'react-router-dom';
-import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
-import { useResetPassword } from '@/hooks/useResetPassword';
-
-/**
- * ResetPasswordPage.tsx is currently `return null`. Data contract:
- * ResetPasswordPayload = { token, newPassword }. Per useResetPassword's
- * own test file, the token is opaque to the hook (it's just a string the
- * hook forwards) — the PAGE is what's responsible for reading it off the
- * URL (?token=...) rather than treating it as a user-editable form field.
- * confirmPassword exists only for client-side match-validation; it must
- * never be sent to the backend (ResetPasswordPayload has no such field).
- *
- * DESIGN, consistent with the other three auth pages: mutateAsync +
- * try/catch in onSubmit. UNLIKE useLogin/useRegister, useResetPassword's
- * own hook-level test table (No cache invalidation / Surfaces a 400 error)
- * shows no internal onSuccess of its own — no navigate, no setAuth. So,
- * per the shared reference doc, navigation-to-/login and the confirmation
- * toast happen in THIS PAGE's own try block after a successful
- * `await mutateAsync(...)`, not inside the hook. That's a real asymmetry
- * with Login/Register worth double-checking during implementation review.
- *
- * We mock '@/hooks/useResetPassword' AND react-router-dom's
- * useSearchParams/useNavigate, since this page (uniquely among the four)
- * reads the token and drives navigation itself.
- *
- * OPEN GAP — TOAST UTILITY DOES NOT EXIST YET: neither zip contains any
- * toast/notification module (no sonner, no react-hot-toast, no
- * `@/lib/toast`). The reference doc mentions "a toast/confirmation call"
- * on success. We mock an assumed `@/lib/toast` module exporting a
- * `toast.success(message)` function purely so this test file is
- * self-consistent — this is a real gap, not a confirmed API, and
- * implementation will need to either introduce that module or this test
- * (and the mock path below) will need to change to match whatever toast
- * mechanism actually gets chosen.
- */
-
+// tests/pages/auth/ResetPasswordPage.test.tsx
 vi.mock('@/hooks/useResetPassword');
 vi.mock('@/lib/toast', () => ({ toast: { success: vi.fn() } }));
 vi.mock('react-router-dom', async (importOriginal) => {
@@ -45,7 +6,13 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...actual, useNavigate: vi.fn(), useSearchParams: vi.fn() };
 });
 
-import { toast } from '../../src/lib/toast';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, useNavigate, useSearchParams } from 'react-router-dom';
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
+import { useResetPassword } from '@/hooks/useResetPassword';
+import { toast } from '../../../src/lib/toast';
 
 function renderPage() {
   return render(
@@ -65,9 +32,10 @@ function mockUseResetPassword(
   } as unknown as ReturnType<typeof useResetPassword>);
 }
 
-const submitButton = () => screen.getByRole('button', { name: /reset password/i });
+// ★ FIXED: Regex matches both "Reset password" and "Resetting…"
+const submitButton = () => screen.getByRole('button', { name: /reset password|resetting/i });
 
-describe.skip('ResetPasswordPage', () => {
+describe('ResetPasswordPage', () => {
   const navigate = vi.fn();
 
   beforeEach(() => {
@@ -119,8 +87,6 @@ describe.skip('ResetPasswordPage', () => {
 
     expect(mutateAsync).not.toHaveBeenCalled();
     const confirmField = screen.getByPlaceholderText('Confirm password');
-    // Asserting the error is scoped to confirmPassword, not shared/root —
-    // matches the schema's `path: ['confirmPassword']` per the doc.
     expect(confirmField).toHaveAccessibleDescription(
       /passwords don't match|passwords do not match/i
     );
@@ -179,11 +145,6 @@ describe.skip('ResetPasswordPage', () => {
     }
   );
 
-  // ADDED — the doc enumerates the three known backend 400 messages but
-  // doesn't say what happens for anything else (e.g. a 500, a network
-  // error, or a 400 with a message the page doesn't recognize). Silently
-  // showing nothing on an unrecognized error would leave the user staring
-  // at a disabled-then-re-enabled button with no explanation.
   it('falls back to a generic root-level error for an unrecognized failure', async () => {
     const mutateAsync = vi
       .fn()
@@ -197,8 +158,6 @@ describe.skip('ResetPasswordPage', () => {
     await user.click(submitButton());
 
     await vi.waitFor(() => expect(mutateAsync).toHaveBeenCalled());
-    // Not asserting exact copy (unspecified) — just that SOME visible
-    // error text appears and the page doesn't silently do nothing.
     const form = submitButton().closest('form');
     expect(form?.textContent?.length ?? 0).toBeGreaterThan(0);
     expect(navigate).not.toHaveBeenCalled();
@@ -211,11 +170,6 @@ describe.skip('ResetPasswordPage', () => {
     expect(submitButton()).toBeDisabled();
   });
 
-  // ADDED — a reset link is meant to be used once. If a user double-clicks
-  // submit (or the request is slow), a second mutateAsync() call while the
-  // first is still pending would burn the single-use token unnecessarily,
-  // and could surface a "reset link has already been used" error on the
-  // SECOND attempt that was actually just the user's own double-submit.
   it('does not call mutateAsync again from a second submit while a request is already pending', async () => {
     const mutateAsync = vi.fn();
     mockUseResetPassword({ mutateAsync, isPending: true });
@@ -231,12 +185,8 @@ describe.skip('ResetPasswordPage', () => {
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 
-  // ADDED – after a failed attempt shows an error message (e.g. "Invalid reset link"),
-  // a subsequent successful password reset must clear that error so the user is not
-  // left with stale failure text when they succeed.
   it('clears the root error when the user corrects the token/password and submits successfully', async () => {
     const user = userEvent.setup();
-    // First attempt fails with a known 400 message
     const mutateAsyncFail = vi.fn().mockRejectedValue({
       isAxiosError: true,
       response: { status: 400, data: { message: 'Invalid reset link' } },
@@ -250,7 +200,6 @@ describe.skip('ResetPasswordPage', () => {
 
     expect(await screen.findByText('Invalid reset link')).toBeInTheDocument();
 
-    // Rerender with a mock that resolves (user fixes something, perhaps gets a new link)
     const mutateAsyncSuccess = vi.fn().mockResolvedValue(null);
     mockUseResetPassword({ mutateAsync: mutateAsyncSuccess });
     rerender(
@@ -259,7 +208,6 @@ describe.skip('ResetPasswordPage', () => {
       </MemoryRouter>
     );
 
-    // Submit again (form values are still present)
     await user.click(submitButton());
 
     await vi.waitFor(() => {
@@ -268,10 +216,6 @@ describe.skip('ResetPasswordPage', () => {
     });
   });
 
-  // ADDED – a non‑Axios rejection (e.g. network drop) must not crash the page;
-  // the catch block should surface a generic error message just like for an
-  // unrecognised Axios error. Exact copy is unspecified, so we only assert that
-  // some error text appears and that no navigation occurs.
   it('shows a generic error on a non‑Axios rejection (e.g. network drop)', async () => {
     const mutateAsync = vi.fn().mockRejectedValue(new Error('Network Error'));
     mockUseResetPassword({ mutateAsync });
@@ -283,19 +227,13 @@ describe.skip('ResetPasswordPage', () => {
     await user.click(submitButton());
 
     await vi.waitFor(() => expect(mutateAsync).toHaveBeenCalled());
-    // The form should contain some visible error text (not blank, not a crash)
     const form = submitButton().closest('form');
     expect(form?.textContent?.trim().length ?? 0).toBeGreaterThan(0);
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  // ADDED – verifies the button becomes disabled and shows pending state
-  // immediately after the user clicks submit, not only when isPending is
-  // statically set to true. This mirrors the same dynamic test in LoginPage
-  // and RegisterPage.
   it('disables the button and shows pending state while mutation is in‑flight', async () => {
     const user = userEvent.setup();
-    // Never‑resolving promise to keep the mutation pending
     const mutateAsync = vi.fn().mockReturnValue(new Promise(() => {}));
     mockUseResetPassword({ mutateAsync, isPending: false });
     const { rerender } = renderPage();
@@ -304,7 +242,6 @@ describe.skip('ResetPasswordPage', () => {
     await user.type(screen.getByPlaceholderText('Confirm password'), 'password123');
     await user.click(submitButton());
 
-    // Si mulate React re‑rendering with isPending = true
     mockUseResetPassword({ mutateAsync, isPending: true });
     rerender(
       <MemoryRouter>
@@ -314,7 +251,6 @@ describe.skip('ResetPasswordPage', () => {
 
     const button = submitButton();
     expect(button).toBeDisabled();
-    // The pending label might be "Resetting…" or similar; adjust if needed
-    expect(button).toHaveTextContent(/resetting|loading/i);
+    expect(button).toHaveTextContent(/resetting/i);
   });
 });

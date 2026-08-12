@@ -79,7 +79,7 @@ const router = createBrowserRouter([
     element: <PublicRoute />,
     children: [
       {
-        element: <AuthLayout />,
+        element: <AuthLayout maxWidth="w-full" />,
         children: [
           { path: ROUTES.LOGIN, element: withSuspense(<LoginPage />) },
           { path: ROUTES.REGISTER, element: withSuspense(<RegisterPage />) },
