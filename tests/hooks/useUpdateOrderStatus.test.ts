@@ -7,7 +7,7 @@ import { createQueryWrapper } from '../test-utils';
 
 vi.mock('@/lib/axios');
 
-describe.skip('useUpdateOrderStatus', () => {
+describe('useUpdateOrderStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -80,15 +80,12 @@ describe.skip('useUpdateOrderStatus', () => {
     // Immediately fire a second while the first is pending (same status avoids TS narrowing)
     result.current.mutate({ id: 'o2', status: 'SHIPPED' });
 
-    // Only one API call should have been made
-    expect(api.patch).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
     expect(api.patch).toHaveBeenCalledWith('/admin/orders/o1/status', { status: 'SHIPPED' });
 
-    // Resolve the first call
     resolvePatch!({ data: { id: 'o1', status: 'SHIPPED' } });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Still only one call – second mutation was suppressed
     expect(api.patch).toHaveBeenCalledTimes(1);
   });
 });

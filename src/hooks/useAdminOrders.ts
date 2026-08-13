@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/axios';
 import { QUERY_KEYS } from '@/constants';
-import type { Order, OrderStatus, PaginatedResult } from '@/types';
+import type { AdminOrderSummary, OrderStatus, PaginatedResult } from '@/types';
 
 interface AdminOrdersParams {
   status?: OrderStatus;
@@ -9,10 +10,13 @@ interface AdminOrdersParams {
 }
 
 export function useAdminOrders(params: AdminOrdersParams = {}) {
-  return useQuery<PaginatedResult<Order>>({
+  return useQuery<PaginatedResult<AdminOrderSummary>>({
     queryKey: [QUERY_KEYS.ADMIN_ORDERS, params],
     queryFn: async () => {
-      throw new Error('useAdminOrders: not implemented yet');
+      const { data } = await api.get<PaginatedResult<AdminOrderSummary>>('/admin/orders', {
+        params,
+      });
+      return data;
     },
   });
 }

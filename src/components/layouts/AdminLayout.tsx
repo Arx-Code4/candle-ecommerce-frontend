@@ -1,45 +1,57 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { useAuthStore } from '@/store/auth.store';
-import { useLogout } from '@/hooks/useLogout';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
 
-function adminNavLinkClass({ isActive }: { isActive: boolean }) {
+function sidebarLinkClass({ isActive }: { isActive: boolean }) {
   return cn(
-    'text-sm font-medium transition-colors',
-    isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+    'block rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+    isActive
+      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
   );
 }
 
 export default function AdminLayout() {
-  const user = useAuthStore((s) => s.user);
-  const { mutate: logout, isPending } = useLogout();
+  const { user, logout, isLoggingOut } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <p className="font-semibold text-foreground">Candle Store Admin</p>
-          <nav className="flex items-center gap-4">
-            <NavLink to={ROUTES.ADMIN_PRODUCTS} className={adminNavLinkClass}>
-              Products
-            </NavLink>
-            <NavLink to={ROUTES.ADMIN_ORDERS} className={adminNavLinkClass}>
-              Orders
-            </NavLink>
-          </nav>
+    <div className="min-h-screen flex bg-background">
+      <aside className="w-60 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground flex flex-col">
+        <div className="px-5 py-6 border-b border-sidebar-border">
+          <p className="font-heading text-lg text-sidebar-foreground">LUMIÈRE</p>
+          <p className="text-xs text-muted-foreground mt-1">Admin</p>
         </div>
-        <div className="flex items-center gap-4">
-          {user && <p className="text-muted-foreground text-sm">{user.email}</p>}
-          <Button variant="outline" onClick={() => logout()} disabled={isPending}>
-            {isPending ? 'Logging out…' : 'Log out'}
+        <nav className="flex flex-col gap-1 p-3">
+          <NavLink to={ROUTES.ADMIN_PRODUCTS} className={sidebarLinkClass}>
+            Products
+          </NavLink>
+          <NavLink to={ROUTES.ADMIN_ORDERS} className={sidebarLinkClass}>
+            Orders
+          </NavLink>
+        </nav>
+        <div className="mt-auto p-3 border-t border-sidebar-border">
+          {user && <p className="mb-2 truncate px-1 text-xs text-muted-foreground">{user.email}</p>}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => logout()}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? 'Logging out…' : 'Logout'}
           </Button>
         </div>
-      </header>
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="border-b border-border bg-card px-6 py-4">
+          <h1 className="font-heading text-xl text-foreground">Candle Store Admin</h1>
+        </header>
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

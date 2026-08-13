@@ -7,7 +7,7 @@ import { createQueryWrapper } from '../test-utils';
 
 vi.mock('@/lib/axios');
 
-describe.skip('useUpdateProductStatus', () => {
+describe('useUpdateProductStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -69,7 +69,7 @@ describe.skip('useUpdateProductStatus', () => {
     // Second while first pending
     result.current.mutate({ id: 'p2', isPublished: false });
 
-    expect(api.patch).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
     expect(api.patch).toHaveBeenCalledWith('/admin/products/p1/status', { isPublished: true });
 
     resolvePatch!({ data: { id: 'p1', isPublished: true } });
