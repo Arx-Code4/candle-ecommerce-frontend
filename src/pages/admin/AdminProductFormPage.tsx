@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { isAxiosError } from 'axios';
@@ -83,7 +83,7 @@ export default function AdminProductFormPage() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<AdminProductFormValues>({
-    resolver: zodResolver(adminProductSchema),
+    resolver: zodResolver(adminProductSchema) as Resolver<AdminProductFormValues>,
     defaultValues: emptyValues,
   });
 

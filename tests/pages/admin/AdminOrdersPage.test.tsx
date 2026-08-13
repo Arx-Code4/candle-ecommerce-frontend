@@ -37,7 +37,7 @@ describe('AdminOrdersPage', () => {
       isLoading: false,
       isError: false,
       data: { items: [processing, shipped], page: 1, limit: 20, total: 2 },
-    } as ReturnType<typeof useAdminOrders>);
+    } as unknown as ReturnType<typeof useAdminOrders>);
   });
 
   it('shows a loading state', () => {
@@ -45,7 +45,7 @@ describe('AdminOrdersPage', () => {
       isLoading: true,
       isError: false,
       data: undefined,
-    } as ReturnType<typeof useAdminOrders>);
+    } as unknown as ReturnType<typeof useAdminOrders>);
     renderPage();
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
@@ -55,7 +55,7 @@ describe('AdminOrdersPage', () => {
       isLoading: false,
       isError: true,
       data: undefined,
-    } as ReturnType<typeof useAdminOrders>);
+    } as unknown as ReturnType<typeof useAdminOrders>);
     renderPage();
     expect(screen.getByText(/failed to load/i)).toBeInTheDocument();
   });
@@ -84,7 +84,7 @@ describe('AdminOrdersPage', () => {
       isLoading: false,
       isError: false,
       data: { items: [], page: 1, limit: 20, total: 0 },
-    } as ReturnType<typeof useAdminOrders>);
+    } as unknown as ReturnType<typeof useAdminOrders>);
     renderPage();
     expect(screen.getByText(/no orders/i)).toBeInTheDocument();
   });

@@ -46,7 +46,7 @@ describe('AdminProductListPage', () => {
       isLoading: true,
       isError: false,
       data: undefined,
-    } as ReturnType<typeof useAdminProducts>);
+    } as unknown as ReturnType<typeof useAdminProducts>);
     renderPage();
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
@@ -56,7 +56,7 @@ describe('AdminProductListPage', () => {
       isLoading: false,
       isError: true,
       data: undefined,
-    } as ReturnType<typeof useAdminProducts>);
+    } as unknown as ReturnType<typeof useAdminProducts>);
     renderPage();
     expect(screen.getByText(/failed to load/i)).toBeInTheDocument();
   });
@@ -71,7 +71,7 @@ describe('AdminProductListPage', () => {
         limit: 20,
         total: 0,
       } satisfies PaginatedResult<AdminProductSummary>,
-    } as ReturnType<typeof useAdminProducts>);
+    } as unknown as ReturnType<typeof useAdminProducts>);
     renderPage();
     expect(screen.getByText(/no products/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /add your first product/i })).toHaveAttribute(
@@ -85,7 +85,7 @@ describe('AdminProductListPage', () => {
       isLoading: false,
       isError: false,
       data: { items: [vanilla, draft], page: 1, limit: 20, total: 2 },
-    } as ReturnType<typeof useAdminProducts>);
+    } as unknown as ReturnType<typeof useAdminProducts>);
     renderPage();
     expect(screen.getByText(/vanilla candle/i)).toBeInTheDocument();
     expect(screen.getByText(/draft candle/i)).toBeInTheDocument();
