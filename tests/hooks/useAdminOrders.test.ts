@@ -9,7 +9,7 @@ vi.mock('@/lib/axios');
 
 const mockResult: PaginatedResult<Order> = { items: [], page: 1, limit: 20, total: 0 };
 
-describe.skip('useAdminOrders', () => {
+describe('useAdminOrders', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

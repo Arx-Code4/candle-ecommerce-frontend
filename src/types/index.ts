@@ -74,6 +74,26 @@ export interface ProductFormInput {
   variants: ProductVariantInput[];
   photos: File[]; // required on create (backend enforces min 1 photo); omitted entirely via Partial<> on update to leave existing photos untouched
 }
+
+export interface AdminPhotoInput {
+  url: string;
+  sortOrder?: number;
+}
+
+export interface AdminProductFormValues {
+  name: string;
+  description: string;
+  price: number;
+  photos: AdminPhotoInput[];
+  variants: ProductVariantInput[];
+}
+
+export interface AdminProductSummary extends Product {
+  isPublished: boolean;
+  description: string;
+  photos: ProductPhoto[];
+}
+
 export interface ProductFilters {
   scent?: string;
   size?: string;
@@ -110,6 +130,16 @@ export interface OrderSummary {
   totalAmount: string;
   itemCount: number;
   createdAt: string;
+}
+
+export interface AdminOrderSummary {
+  id: string;
+  status: OrderStatus;
+  customerName: string;
+  customerEmail: string;
+  items: OrderItem[];
+  totalAmount: string;
+  itemCount?: number;
 }
 
 // Cart types

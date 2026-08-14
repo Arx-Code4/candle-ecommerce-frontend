@@ -14,7 +14,7 @@ const mockResult: PaginatedResult<Product> = {
   total: 0,
 };
 
-describe.skip('useAdminProducts', () => {
+describe('useAdminProducts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
