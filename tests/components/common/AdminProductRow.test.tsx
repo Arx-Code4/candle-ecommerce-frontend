@@ -12,7 +12,7 @@ const published: AdminProductSummary = {
   id: 'p1',
   name: 'Vanilla Candle',
   description: 'Warm vanilla',
-  price: 25,
+  price: '25',
   isPublished: true,
   primaryPhotoUrl: 'https://cdn.example.com/vanilla.jpg',
   photos: [{ id: 'ph1', url: 'https://cdn.example.com/vanilla.jpg', sortOrder: 0 }],

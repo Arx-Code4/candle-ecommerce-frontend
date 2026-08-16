@@ -12,7 +12,7 @@ const updated: AdminProductSummary = {
   id: 'p1',
   name: 'Updated',
   description: 'Nice',
-  price: 30,
+  price: '30',
   isPublished: false,
   primaryPhotoUrl: 'https://cdn.example.com/a.jpg',
   photos: [{ id: 'ph1', url: 'https://cdn.example.com/a.jpg', sortOrder: 0 }],

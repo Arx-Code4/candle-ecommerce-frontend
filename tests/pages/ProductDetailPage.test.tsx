@@ -68,7 +68,7 @@ const mockProduct: Product = {
   id: 'p1',
   name: 'Vanilla Candle',
   description: 'Warm scent',
-  price: 25,
+  price: '25',
   isPublished: true,
   primaryPhotoUrl: 'jjj',
   photos: [{ id: 'ph1', url: 'https://cdn.example.com/p1.jpg', sortOrder: 0 }],

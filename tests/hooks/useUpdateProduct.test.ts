@@ -15,14 +15,14 @@ const mockProduct: Product = {
   id: 'p1',
   name: 'Updated',
   description: 'Nice',
-  price: 30,
+  price: '30',
   isPublished: false,
   primaryPhotoUrl: 'jjj',
   photos: [],
   variants: [],
 };
 
-describe.skip('useUpdateProduct', () => {
+describe('useUpdateProduct', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

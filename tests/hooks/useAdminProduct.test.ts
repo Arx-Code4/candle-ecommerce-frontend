@@ -11,7 +11,7 @@ const mockProduct: Product = {
   id: 'p1',
   name: 'Candle',
   description: 'Nice',
-  price: 25,
+  price: '25',
   isPublished: false,
   primaryPhotoUrl: 'jjj',
   photos: [],

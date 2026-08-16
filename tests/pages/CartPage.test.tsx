@@ -13,9 +13,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 vi.mock('@/components/common/CartItemRow', () => ({
-  default: ({ item }: { item: CartItem }) => (
-    <div data-testid="cart-item-row">{item.productName}</div>
-  ),
+  default: ({ item }: { item: CartItem }) => <div data-testid="cart-item-row">{item.name}</div>,
 }));
 
 vi.mock('@/components/common/CartSummary', () => ({
@@ -46,30 +44,33 @@ const items: CartItem[] = [
   {
     id: 'i1',
     productVariantId: 'v1',
-    productName: 'Candle A',
+    name: 'Candle A',
     scent: 'vanilla',
     size: 'large',
     unitPrice: '300.00',
+    subtotal: '300',
     quantity: 1,
     available: true,
   },
   {
     id: 'i2',
     productVariantId: 'v2',
-    productName: 'Candle B',
+    name: 'Candle B',
     scent: 'lavender',
     size: 'small',
     unitPrice: '300.00',
+    subtotal: '300',
     quantity: 1,
     available: true,
   },
   {
     id: 'i3',
     productVariantId: 'v3',
-    productName: 'Candle C',
+    name: 'Candle C',
     scent: 'rose',
     size: 'large',
     unitPrice: '300.00',
+    subtotal: '300',
     quantity: 1,
     available: true,
   },

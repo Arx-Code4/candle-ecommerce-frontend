@@ -13,7 +13,7 @@ function makeProducts(count: number): Product[] {
     id: `p${i + 1}`,
     name: `Candle ${i + 1}`,
     description: 'desc',
-    price: 20 + i,
+    price: '20' + i,
     isPublished: true,
     primaryPhotoUrl: 'hhh',
     photos: [{ id: `ph${i}`, url: `https://cdn.example.com/${i}.jpg`, sortOrder: 0 }],
