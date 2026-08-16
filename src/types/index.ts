@@ -85,6 +85,7 @@ export interface AdminProductFormValues {
   description: string;
   price: number;
   photos: AdminPhotoInput[];
+  photoFiles?: File[];
   variants: ProductVariantInput[];
 }
 

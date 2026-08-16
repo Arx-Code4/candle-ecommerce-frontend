@@ -1,27 +1,23 @@
-// tests/pages/OrderConfirmationPage.test.tsx
-// Source: src/pages/OrderConfirmationPage.tsx
-// Per eco-9.2.3 §9.3 (OrderConfirmationPage.test.tsx). Deliberately
-// data-free page — no hooks to mock, per eco-8's "no API call, no order
-// lookup" design decision.
 import { describe, it, expect } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { renderWithProviders, screen } from '../utils/renderWithProviders';
 import OrderConfirmationPage from '@/pages/OrderConfirmationPage';
 
-function renderPage() {
+function renderPage(initialPath = '/order-confirmation') {
   return renderWithProviders(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialPath]}>
       <OrderConfirmationPage />
     </MemoryRouter>
   );
 }
 
 describe('OrderConfirmationPage', () => {
-  it('renders the static confirmation message with no API call', () => {
+  it('renders the static confirmation heading and message with no API call', () => {
     renderPage();
 
+    expect(screen.getByRole('heading', { name: /confirming your payment/i })).toBeInTheDocument();
     expect(
-      screen.getByText(/we're confirming your payment.*email confirmation.*order history/i)
+      screen.getByText(/we're confirming your payment.*email confirmation/i)
     ).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument(); // no loading spinner
   });
@@ -35,10 +31,27 @@ describe('OrderConfirmationPage', () => {
 
   it('has no loading or error states — renders synchronously to its one static state', () => {
     // Nothing to mock: no query/mutation hook is used by this page at all.
-    // Rendering without any mocked hook and immediately finding the
-    // static content confirms there is no data dependency to exercise.
     renderPage();
 
     expect(screen.getByText(/we're confirming your payment/i)).toBeInTheDocument();
+  });
+
+  it('shows the tx_ref from the URL when present', () => {
+    renderPage('/order-confirmation?tx_ref=abc123');
+
+    expect(screen.getByText('abc123')).toBeInTheDocument();
+    expect(screen.getByText(/reference:/i)).toBeInTheDocument();
+  });
+
+  it('renders no reference line when tx_ref is absent', () => {
+    renderPage();
+
+    expect(screen.queryByText(/reference:/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the same static message regardless of a status query param', () => {
+    renderPage('/order-confirmation?status=failed&tx_ref=xyz789');
+
+    expect(screen.getByRole('heading', { name: /confirming your payment/i })).toBeInTheDocument();
   });
 });
