@@ -6,7 +6,7 @@ import StockBadge from './StockBadge';
 interface ProductCardProps {
   id: string;
   name: string;
-  price: number;
+  price: string;
   primaryPhotoUrl?: string;
   variants: ProductVariant[];
 }
@@ -33,7 +33,7 @@ const ProductCard: FC<ProductCardProps> = ({ id, name, price, primaryPhotoUrl, v
         <h3 className="font-heading text-sm text-foreground">{name}</h3>
         <span className="text-sm font-semibold">
           <span className="text-muted-foreground mr-1">ETB</span>
-          {price.toFixed(2)}
+          {price}
         </span>
       </div>
     </Link>

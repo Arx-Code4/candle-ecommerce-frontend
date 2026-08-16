@@ -92,7 +92,7 @@ export default function AdminProductFormPage() {
     reset({
       name: matchedProduct.name,
       description: matchedProduct.description ?? '',
-      price: matchedProduct.price,
+      price: Number(matchedProduct.price),
       photos:
         matchedProduct.photos?.length > 0
           ? matchedProduct.photos.map((photo) => ({ url: photo.url, sortOrder: photo.sortOrder }))

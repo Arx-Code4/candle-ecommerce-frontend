@@ -49,7 +49,7 @@ const CartItemRow: FC<CartItemRowProps> = ({ item }) => {
     return (
       <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 opacity-50">
         <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-foreground">{item.productName}</span>
+          <span className="text-sm font-medium text-foreground">{item.name}</span>
           <span className="text-xs text-muted-foreground">No longer available</span>
         </div>
         <button
@@ -67,13 +67,17 @@ const CartItemRow: FC<CartItemRowProps> = ({ item }) => {
   return (
     <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-foreground">{item.productName}</span>
+        <span className="text-sm font-medium text-foreground">{item.name}</span>
         <span className="text-xs text-muted-foreground">
           {item.scent} / {item.size}
         </span>
         <span className="text-sm">
           <span className="text-muted-foreground mr-1">ETB</span>
           {item.unitPrice}
+        </span>
+        <span className="text-sm font-medium">
+          <span className="text-muted-foreground mr-1">Subtotal:</span>
+          ETB {item.subtotal}
         </span>
         {toast && <span className="text-xs text-warning-foreground">{toast}</span>}
       </div>

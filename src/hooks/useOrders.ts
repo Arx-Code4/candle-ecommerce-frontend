@@ -3,17 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import api from '@/lib/axios';
 import { QUERY_KEYS } from '@/constants';
-
-export interface OrderListItem {
-  id: string;
-  status: string;
-  totalAmount: string;
-  itemCount: number;
-  createdAt: string;
-}
+import type { OrderSummary } from '@/types';
 
 export interface OrdersResponse {
-  items: OrderListItem[];
+  items: OrderSummary[];
 }
 
 export function useOrders() {

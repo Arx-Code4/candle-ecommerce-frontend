@@ -1,6 +1,3 @@
-// tests/hooks/useOrders.test.ts
-// Source: src/hooks/useOrders.ts
-// Per eco-9.2.3 §9.2 (useOrders.test.ts) + eco-5c GET /orders.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,11 +17,6 @@ function wrapper({ children }: { children: ReactNode }) {
   });
   return createElement(QueryClientProvider, { client: queryClient }, children);
 }
-
-// NOTE: mocked api.get resolves with the already-unwrapped payload shape
-// (i.e. what the axios response interceptor hands back), per the
-// template's contract (v3 docs, Section 7.1) and the Testing Guide's
-// Section 6.2 rule — hook tests never assert on/mock the raw envelope.
 
 describe('useOrders', () => {
   beforeEach(() => {

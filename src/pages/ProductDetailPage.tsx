@@ -79,7 +79,7 @@ export default function ProductDetailPage() {
         <p className="text-sm text-muted-foreground">{product.description}</p>
         <span className="text-lg font-semibold">
           <span className="text-muted-foreground mr-1">ETB</span>
-          {product.price.toFixed(2)}
+          {product.price}
         </span>
 
         <VariantSelector variants={product.variants} onSelect={setSelectedVariant} />

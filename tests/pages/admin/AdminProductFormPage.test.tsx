@@ -18,7 +18,7 @@ const existing: AdminProductSummary = {
   id: 'p1',
   name: 'Vanilla Candle',
   description: 'Smells nice',
-  price: 25,
+  price: '25',
   isPublished: true,
   primaryPhotoUrl: 'https://example.com/a.jpg',
   photos: [{ id: 'ph1', url: 'https://example.com/a.jpg', sortOrder: 0 }],
