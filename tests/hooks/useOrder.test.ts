@@ -1,6 +1,3 @@
-// tests/hooks/useOrder.test.ts
-// Source: src/hooks/useOrder.ts
-// Per eco-9.2.3 §9.2 (useOrder.test.ts) + eco-5c GET /orders/:id.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

@@ -8,7 +8,7 @@ function renderCard(overrides: Partial<Parameters<typeof ProductCard>[0]> = {}) 
   const props = {
     id: 'p1',
     name: 'Vanilla Candle',
-    price: 25,
+    price: '25',
     primaryPhotoUrl: 'https://cdn.example.com/vanilla.jpg',
     variants: [{ id: 'v1', scent: 'vanilla', size: 'large', stock: 3 }] as ProductVariant[],
     ...overrides,

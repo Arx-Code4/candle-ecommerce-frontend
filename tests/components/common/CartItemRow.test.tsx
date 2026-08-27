@@ -12,10 +12,11 @@ vi.mock('@/hooks/useRemoveCartItem');
 const baseItem: CartItem = {
   id: 'item-1',
   productVariantId: 'v1',
-  productName: 'Vanilla Candle',
+  name: 'Vanilla Candle',
   scent: 'vanilla',
   size: 'large',
   unitPrice: '25.00',
+  subtotal: '50',
   quantity: 2,
   available: true,
 };

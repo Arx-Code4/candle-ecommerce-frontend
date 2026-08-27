@@ -16,7 +16,7 @@ const products: Product[] = [
     id: 'p1',
     name: 'Vanilla Candle',
     description: 'desc',
-    price: 25,
+    price: '25',
     isPublished: true,
     primaryPhotoUrl: 'jj',
     photos: [],

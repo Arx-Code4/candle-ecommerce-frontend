@@ -6,19 +6,23 @@ import AdminProductFormPage from '@/pages/admin/AdminProductFormPage';
 import { useAdminProducts } from '@/hooks/useAdminProducts';
 import { useCreateAdminProduct } from '@/hooks/useCreateAdminProduct';
 import { useUpdateAdminProduct } from '@/hooks/useUpdateAdminProduct';
+import { useCreateProduct } from '@/hooks/useCreateProduct';
+import { useUpdateProduct } from '@/hooks/useUpdateProduct';
 import { toast } from '@/lib/toast';
 import type { AdminProductSummary } from '@/types';
 
 vi.mock('@/hooks/useAdminProducts');
 vi.mock('@/hooks/useCreateAdminProduct');
 vi.mock('@/hooks/useUpdateAdminProduct');
+vi.mock('@/hooks/useCreateProduct');
+vi.mock('@/hooks/useUpdateProduct');
 vi.mock('@/lib/toast', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
 
 const existing: AdminProductSummary = {
   id: 'p1',
   name: 'Vanilla Candle',
   description: 'Smells nice',
-  price: 25,
+  price: '25',
   isPublished: true,
   primaryPhotoUrl: 'https://example.com/a.jpg',
   photos: [{ id: 'ph1', url: 'https://example.com/a.jpg', sortOrder: 0 }],
@@ -42,7 +46,21 @@ function mockUpdate(mutateAsync = vi.fn().mockResolvedValue(existing)) {
   } as unknown as ReturnType<typeof useUpdateAdminProduct>);
   return mutateAsync;
 }
+function mockCreateFiles(mutateAsync = vi.fn().mockResolvedValue(existing)) {
+  vi.mocked(useCreateProduct).mockReturnValue({
+    mutateAsync,
+    isPending: false,
+  } as unknown as ReturnType<typeof useCreateProduct>);
+  return mutateAsync;
+}
 
+function mockUpdateFiles(mutateAsync = vi.fn().mockResolvedValue(existing)) {
+  vi.mocked(useUpdateProduct).mockReturnValue({
+    mutateAsync,
+    isPending: false,
+  } as unknown as ReturnType<typeof useUpdateProduct>);
+  return mutateAsync;
+}
 function renderAtPath(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -60,6 +78,8 @@ describe('AdminProductFormPage', () => {
     vi.clearAllMocks();
     mockCreate();
     mockUpdate();
+    mockCreateFiles();
+    mockUpdateFiles();
     vi.mocked(useAdminProducts).mockReturnValue({
       data: { items: [existing], page: 1, limit: 20, total: 1 },
       isLoading: false,
@@ -96,6 +116,27 @@ describe('AdminProductFormPage', () => {
       await user.click(screen.getByRole('button', { name: /save/i }));
 
       await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+      expect(toast.success).toHaveBeenCalledWith('Product created');
+    });
+    it('uploads via useCreateProduct and skips the JSON create path when a file is added', async () => {
+      const jsonCreate = mockCreate();
+      const fileCreate = mockCreateFiles();
+      const user = userEvent.setup();
+      renderAtPath('/admin/products/new');
+
+      await user.type(screen.getByLabelText(/name/i), 'Vanilla Candle');
+      await user.type(screen.getByLabelText(/description/i), 'Smells nice');
+      await user.type(screen.getByLabelText(/price/i), '20');
+      await user.type(screen.getByLabelText(/scent/i), 'Vanilla');
+      await user.type(screen.getByLabelText(/size/i), 'Large');
+
+      const fileInput = screen.getByLabelText(/upload photos/i, { selector: 'input' });
+      await user.upload(fileInput, new File(['x'], 'candle.jpg', { type: 'image/jpeg' }));
+
+      await waitFor(() => expect(screen.getByAltText('candle.jpg')).toBeInTheDocument());
+      await user.click(screen.getByRole('button', { name: /save/i }));
+      await waitFor(() => expect(fileCreate).toHaveBeenCalled());
+      expect(jsonCreate).not.toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith('Product created');
     });
   });

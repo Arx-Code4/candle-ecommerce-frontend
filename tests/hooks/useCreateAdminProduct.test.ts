@@ -12,7 +12,7 @@ const created: AdminProductSummary = {
   id: 'p1',
   name: 'Candle',
   description: 'Nice',
-  price: 25,
+  price: '25',
   isPublished: false,
   primaryPhotoUrl: 'https://cdn.example.com/a.jpg',
   photos: [{ id: 'ph1', url: 'https://cdn.example.com/a.jpg', sortOrder: 0 }],

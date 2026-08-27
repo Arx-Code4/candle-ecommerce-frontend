@@ -16,19 +16,20 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/lib/toast';
 import { ROUTES } from '@/constants';
 import type { AdminProductFormValues } from '@/types';
+import { useCreateProduct, useUpdateProduct } from '@/hooks';
+import PhotoDropzone from '@/components/common/PhotoDropZone';
 
 const adminProductSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
   price: z.coerce.number().positive(),
-  photos: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        sortOrder: z.number().optional(),
-      })
-    )
-    .min(1),
+  photos: z.array(
+    z.object({
+      url: z.string().url().or(z.literal('')),
+      sortOrder: z.number().optional(),
+    })
+  ),
+  photoFiles: z.custom<File[]>().optional().default([]),
   variants: z
     .array(
       z.object({
@@ -46,16 +47,19 @@ const emptyValues: AdminProductFormValues = {
   description: '',
   price: undefined as unknown as number,
   photos: [{ url: '', sortOrder: 0 }],
+  photoFiles: [],
   variants: [{ scent: '', size: '', stock: 0 }],
 };
 
 function normalizePhotos(
   photos: AdminProductFormValues['photos']
 ): AdminProductFormValues['photos'] {
-  return photos.map((photo, index) => ({
-    url: photo.url,
-    sortOrder: photo.sortOrder ?? index,
-  }));
+  return photos
+    .filter((photo) => photo.url.trim() !== '')
+    .map((photo, index) => ({
+      url: photo.url,
+      sortOrder: photo.sortOrder ?? index,
+    }));
 }
 
 function normalizeVariants(variants: AdminProductFormValues['variants']) {
@@ -72,7 +76,8 @@ export default function AdminProductFormPage() {
   const { data, isLoading } = useAdminProducts();
   const { mutateAsync: createProduct, isPending: isCreating } = useCreateAdminProduct();
   const { mutateAsync: updateProduct, isPending: isUpdating } = useUpdateAdminProduct();
-
+  const { mutateAsync: createProductWithFiles, isPending: isCreatingFiles } = useCreateProduct();
+  const { mutateAsync: updateProductWithFiles, isPending: isUpdatingFiles } = useUpdateProduct();
   const matchedProduct = isEdit ? data?.items.find((product) => product.id === id) : undefined;
 
   const {
@@ -92,7 +97,7 @@ export default function AdminProductFormPage() {
     reset({
       name: matchedProduct.name,
       description: matchedProduct.description ?? '',
-      price: matchedProduct.price,
+      price: Number(matchedProduct.price),
       photos:
         matchedProduct.photos?.length > 0
           ? matchedProduct.photos.map((photo) => ({ url: photo.url, sortOrder: photo.sortOrder }))
@@ -110,19 +115,38 @@ export default function AdminProductFormPage() {
   }, [isEdit, matchedProduct, reset]);
 
   const onSubmit = async (values: AdminProductFormValues) => {
-    const payload = {
-      ...values,
-      photos: normalizePhotos(values.photos),
-      variants: normalizeVariants(values.variants),
-    };
+    const hasFiles = (values.photoFiles?.length ?? 0) > 0;
+    const normalizedVariants = normalizeVariants(values.variants);
 
     try {
-      if (isEdit && id) {
-        await updateProduct({ id, ...payload });
-        toast.success('Product updated');
+      if (hasFiles) {
+        const filePayload = {
+          name: values.name,
+          description: values.description,
+          price: values.price,
+          variants: normalizedVariants,
+          photos: values.photoFiles as File[],
+        };
+        if (isEdit && id) {
+          await updateProductWithFiles({ id, data: filePayload });
+          toast.success('Product updated');
+        } else {
+          await createProductWithFiles(filePayload);
+          toast.success('Product created');
+        }
       } else {
-        await createProduct(payload);
-        toast.success('Product created');
+        const payload = {
+          ...values,
+          photos: normalizePhotos(values.photos),
+          variants: normalizedVariants,
+        };
+        if (isEdit && id) {
+          await updateProduct({ id, ...payload });
+          toast.success('Product updated');
+        } else {
+          await createProduct(payload);
+          toast.success('Product created');
+        }
       }
       if (typeof navigate === 'function') navigate(ROUTES.ADMIN_PRODUCTS);
     } catch (error) {
@@ -153,8 +177,7 @@ export default function AdminProductFormPage() {
     return <p className="text-sm text-destructive">Product not found.</p>;
   }
 
-  const pending = isSubmitting || isCreating || isUpdating;
-
+  const pending = isSubmitting || isCreating || isUpdating || isCreatingFiles || isUpdatingFiles;
   return (
     <Card className="max-w-3xl">
       <CardHeader>
@@ -188,6 +211,11 @@ export default function AdminProductFormPage() {
           </div>
 
           <PhotoUrlFieldArray control={control} />
+          <PhotoDropzone control={control} name="photoFiles" />
+          <p className="text-xs text-muted-foreground">
+            If you upload files, they replace any pasted URLs above for this save.
+          </p>
+
           {errors.photos && (
             <p className="text-sm text-destructive">
               {errors.photos.message ?? errors.photos.root?.message}

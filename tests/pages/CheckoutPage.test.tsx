@@ -29,10 +29,11 @@ function makeCartItem(overrides: Partial<CartItem> = {}): CartItem {
   return {
     id: '1',
     productVariantId: 'v1',
-    productName: 'Vanilla Candle',
+    name: 'Vanilla Candle',
     scent: 'vanilla',
     size: '8oz',
     unitPrice: '45.00',
+    subtotal: '45',
     quantity: 1,
     available: true,
     ...overrides,

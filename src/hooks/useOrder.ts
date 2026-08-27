@@ -3,25 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import api from '@/lib/axios';
 import { QUERY_KEYS } from '@/constants';
-
-export interface OrderItem {
-  productNameSnapshot: string;
-  scentSnapshot: string;
-  sizeSnapshot: string;
-  unitPriceSnapshot: string;
-  quantity: number;
-}
-
-export interface OrderDetail {
-  id: string;
-  status: string;
-  totalAmount: string;
-  shippingName: string;
-  shippingPhone: string;
-  shippingAddress: string;
-  items: OrderItem[];
-  createdAt: string;
-}
+import type { OrderDetail } from '@/types';
 
 export function useOrder(orderId: string) {
   return useQuery<OrderDetail, AxiosError>({

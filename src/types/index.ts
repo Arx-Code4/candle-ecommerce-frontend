@@ -50,7 +50,7 @@ export interface ProductVariant {
 export interface Product {
   id: string;
   name: string;
-  price: number;
+  price: string;
   primaryPhotoUrl: string | null;
   variants: ProductVariant[];
   photos?: ProductPhoto[];
@@ -85,6 +85,7 @@ export interface AdminProductFormValues {
   description: string;
   price: number;
   photos: AdminPhotoInput[];
+  photoFiles?: File[];
   variants: ProductVariantInput[];
 }
 
@@ -131,7 +132,24 @@ export interface OrderSummary {
   itemCount: number;
   createdAt: string;
 }
+export interface OrderDetailItem {
+  productNameSnapshot: string;
+  scentSnapshot: string;
+  sizeSnapshot: string;
+  unitPriceSnapshot: string;
+  quantity: number;
+}
 
+export interface OrderDetail {
+  id: string;
+  status: string;
+  totalAmount: string;
+  shippingName: string;
+  shippingPhone: string;
+  shippingAddress: string;
+  items: OrderDetailItem[];
+  createdAt: string;
+}
 export interface AdminOrderSummary {
   id: string;
   status: OrderStatus;
@@ -146,10 +164,11 @@ export interface AdminOrderSummary {
 export interface CartItem {
   id: string;
   productVariantId: string;
-  productName: string;
+  name: string;
   scent: string;
   size: string;
   unitPrice: string;
+  subtotal: string;
   quantity: number;
   available: boolean;
   photoUrl?: string;
