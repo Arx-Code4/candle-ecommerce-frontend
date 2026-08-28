@@ -1,165 +1,99 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
-@import "@fontsource-variable/manrope";
-@import "@fontsource/libre-caslon-text";
+@import '@fontsource-variable/inter';
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
 
 @custom-variant dark (&:is(.dark *));
 
 /* =========================================
-   DESIGN TOKENS
+   DESIGN TOKENS - LUMIÈRE
 ========================================= */
 
 :root {
   /* -----------------------------------------
-     COLORS
+     LUMIÈRE EXACT PALETTE
   ----------------------------------------- */
+  --lumiere-ivory: #f8f3ed;
+  --lumiere-ivory-2: #fcf8f3;
+  --lumiere-cream: #f3e9de;
+  --lumiere-cream-dark: #e9dccf;
 
-  --background: #fff8f2;
-  --foreground: #1f1b13;
+  --lumiere-ink: #211e1b;
+  --lumiere-ink-soft: #4b4540;
+  --lumiere-muted: #756d65;
 
-  --card: #ffffff;
-  --card-foreground: #1f1b13;
+  --lumiere-copper: #a95f34;
+  --lumiere-copper-dark: #944a27;
+  --lumiere-copper-light: #d18a61;
+  --lumiere-copper-pale: #e8c4af;
 
-  --popover: #ffffff;
-  --popover-foreground: #1f1b13;
+  --lumiere-night: #100b08;
+  --lumiere-espresso: #21140e;
+  --lumiere-brown: #3a2418;
 
-  --primary: #874b2c;
-  --primary-foreground: #ffffff;
-
-  --secondary: #e6e2d8;
-  --secondary-foreground: #66645d;
-
-  --muted: #ebe1d4;
-  --muted-foreground: #53443d;
-
-  --accent: #ebe1d4;
-  --accent-foreground: #1f1b13;
-
-  --destructive: #ba1a1a;
-  --destructive-foreground: #ffffff;
-
-  --success: oklch(0.91 0.045 125);
-  --success-foreground: oklch(0.32 0.055 125);
-
-  --warning: oklch(0.9 0.055 60);
-  --warning-foreground: oklch(0.34 0.065 52);
-
-  --border: #d8c2b9;
-  --input: #d8c2b9;
-  --ring: #874b2c;
+  --lumiere-line: #e3d5c8;
+  --lumiere-line-dark: rgba(232, 210, 193, 0.22);
 
   /* -----------------------------------------
-     SHADCN FALLBACK / SURFACE TOKENS
+     MAPPED FALLBACKS / SHADCN TOKENS
   ----------------------------------------- */
+  --background: var(--lumiere-ivory);
+  --foreground: var(--lumiere-ink);
 
-  --primary-fixed: #ffdbcb;
-  --primary-fixed-dim: #ffb693;
-  --on-primary-fixed: #341000;
-  --on-primary-fixed-variant: #6e381a;
+  --card: #ffffff;
+  --card-foreground: var(--lumiere-ink);
 
-  --secondary-fixed: #e6e2d8;
-  --secondary-fixed-dim: #cac6bd;
-  --on-secondary-fixed: #1c1c16;
-  --on-secondary-fixed-variant: #484740;
+  --popover: #ffffff;
+  --popover-foreground: var(--lumiere-ink);
 
-  --tertiary: #5e5a56;
-  --tertiary-foreground: #ffffff;
-  --tertiary-container: #77726e;
-  --on-tertiary-container: #fff9f5;
+  --primary: var(--lumiere-copper);
+  --primary-foreground: #ffffff;
 
-  --error-container: #ffdad6;
-  --on-error-container: #93000a;
+  --secondary: var(--lumiere-cream);
+  --secondary-foreground: var(--lumiere-ink-soft);
 
-  --surface: #fff8f2;
-  --surface-dim: #e2d9cc;
-  --surface-bright: #fff8f2;
-  --surface-container-lowest: #ffffff;
-  --surface-container-low: #fdf2e5;
-  --surface-container: #f7ecdf;
-  --surface-container-high: #f1e7da;
-  --surface-container-highest: #ebe1d4;
-  --surface-variant: #ebe1d4;
-  --surface-tint: #8b4f2f;
+  --muted: var(--lumiere-ivory-2);
+  --muted-foreground: var(--lumiere-muted);
 
-  --outline: #85736c;
-  --outline-variant: #d8c2b9;
+  --accent: var(--lumiere-cream-dark);
+  --accent-foreground: var(--lumiere-ink);
 
-  --inverse-surface: #353027;
-  --inverse-on-surface: #faefe2;
-  --inverse-primary: #ffb693;
+  --border: var(--lumiere-line);
+  --input: var(--lumiere-line);
+  --ring: var(--lumiere-copper);
 
   /* -----------------------------------------
      FONTS
-
-     Use separate source variables to avoid
-     circular references in @theme.
   ----------------------------------------- */
-
-  --app-font-heading: "Libre Caslon Text", serif;
-  --app-font-sans: "Manrope Variable", sans-serif;
-  --app-font-label: "Manrope Variable", sans-serif;
+  --app-font-heading: 'Cormorant Garamond', Georgia, serif;
+  --app-font-sans: 'Inter Variable', 'Inter', Arial, sans-serif;
+  --app-font-label: 'Inter Variable', 'Inter', Arial, sans-serif;
 
   /* -----------------------------------------
-     TYPOGRAPHY
+     TYPOGRAPHY (Base tokens)
   ----------------------------------------- */
-
-  --typography-display-lg: 64px;
-  --typography-display-lg-line-height: 72px;
-
-  --typography-headline-lg: 44px;
-  --typography-headline-lg-line-height: 52px;
-
-  --typography-headline-lg-mobile: 36px;
-  --typography-headline-lg-mobile-line-height: 44px;
-
-  --typography-headline-md: 32px;
-  --typography-headline-md-line-height: 40px;
-
-  --typography-body-lg: 18px;
-  --typography-body-lg-line-height: 28px;
-
-  --typography-body-md: 16px;
-  --typography-body-md-line-height: 24px;
-
-  --typography-label-md: 14px;
-  --typography-label-md-line-height: 20px;
-
-  --typography-label-sm: 12px;
-  --typography-label-sm-line-height: 16px;
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-body: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 38px;
+  --text-3xl: 52px;
+  --text-hero: 68px;
 
   /* -----------------------------------------
      RADIUS
   ----------------------------------------- */
-
-  --radius: 0.875rem;
-
-  /* -----------------------------------------
-     SIDEBAR
-  ----------------------------------------- */
-
-  --sidebar: var(--card);
-  --sidebar-foreground: var(--card-foreground);
-
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-
-  /* -----------------------------------------
-     CHARTS
-  ----------------------------------------- */
-
-  --chart-1: var(--primary);
-  --chart-2: var(--accent);
-  --chart-3: var(--secondary);
-  --chart-4: var(--success);
-  --chart-5: var(--warning);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+  --radius: 12px; /* fallback */
 }
 
 /* =========================================
@@ -168,169 +102,53 @@
 
 @theme inline {
   /* Fonts */
-
   --font-heading: var(--app-font-heading);
   --font-sans: var(--app-font-sans);
   --font-label: var(--app-font-label);
 
-  /* Typography */
-
-  --text-display-lg: var(--typography-display-lg);
-  --text-display-lg--line-height: var(
-    --typography-display-lg-line-height
-  );
-
-  --text-headline-lg: var(--typography-headline-lg);
-  --text-headline-lg--line-height: var(
-    --typography-headline-lg-line-height
-  );
-
-  --text-headline-lg-mobile: var(
-    --typography-headline-lg-mobile
-  );
-  --text-headline-lg-mobile--line-height: var(
-    --typography-headline-lg-mobile-line-height
-  );
-
-  --text-headline-md: var(--typography-headline-md);
-  --text-headline-md--line-height: var(
-    --typography-headline-md-line-height
-  );
-
-  --text-body-lg: var(--typography-body-lg);
-  --text-body-lg--line-height: var(
-    --typography-body-lg-line-height
-  );
-
-  --text-body-md: var(--typography-body-md);
-  --text-body-md--line-height: var(
-    --typography-body-md-line-height
-  );
-
-  --text-label-md: var(--typography-label-md);
-  --text-label-md--line-height: var(
-    --typography-label-md-line-height
-  );
-
-  --text-label-sm: var(--typography-label-sm);
-  --text-label-sm--line-height: var(
-    --typography-label-sm-line-height
-  );
-
-  /* Colors */
-
+  /* Colors - Base */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(
-    --destructive-foreground
-  );
-
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Sidebar */
-
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-
-  --color-sidebar-primary-foreground: var(
-    --sidebar-primary-foreground
-  );
-
-  --color-sidebar-accent: var(--sidebar-accent);
-
-  --color-sidebar-accent-foreground: var(
-    --sidebar-accent-foreground
-  );
-
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-
-  /* Charts */
-
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
+  /* Colors - Lumière Exact */
+  --color-lumiere-ivory: var(--lumiere-ivory);
+  --color-lumiere-ivory-2: var(--lumiere-ivory-2);
+  --color-lumiere-cream: var(--lumiere-cream);
+  --color-lumiere-cream-dark: var(--lumiere-cream-dark);
+  --color-lumiere-ink: var(--lumiere-ink);
+  --color-lumiere-ink-soft: var(--lumiere-ink-soft);
+  --color-lumiere-muted: var(--lumiere-muted);
+  --color-lumiere-copper: var(--lumiere-copper);
+  --color-lumiere-copper-dark: var(--lumiere-copper-dark);
+  --color-lumiere-copper-light: var(--lumiere-copper-light);
+  --color-lumiere-copper-pale: var(--lumiere-copper-pale);
+  --color-lumiere-night: var(--lumiere-night);
+  --color-lumiere-espresso: var(--lumiere-espresso);
+  --color-lumiere-brown: var(--lumiere-brown);
+  --color-lumiere-line: var(--lumiere-line);
+  --color-lumiere-line-dark: var(--lumiere-line-dark);
 
   /* Radius */
-
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-/* =========================================
-   DARK MODE
-========================================= */
-
-.dark {
-  --background: oklch(0.18 0.018 55);
-  --foreground: oklch(0.94 0.018 82);
-
-  --card: oklch(0.22 0.02 55);
-  --card-foreground: oklch(0.94 0.018 82);
-
-  --popover: oklch(0.22 0.02 55);
-  --popover-foreground: oklch(0.94 0.018 82);
-
-  --primary: oklch(0.62 0.115 48);
-  --primary-foreground: oklch(0.98 0.012 85);
-
-  --secondary: oklch(0.32 0.035 65);
-  --secondary-foreground: oklch(0.91 0.025 80);
-
-  --muted: oklch(0.31 0.018 55);
-  --muted-foreground: oklch(0.68 0.025 75);
-
-  --accent: oklch(0.76 0.115 78);
-  --accent-foreground: oklch(0.22 0.025 55);
-
-  --success: oklch(0.34 0.045 125);
-  --success-foreground: oklch(0.88 0.06 125);
-
-  --warning: oklch(0.35 0.055 60);
-  --warning-foreground: oklch(0.9 0.075 65);
-
-  --destructive: oklch(0.63 0.16 32);
-  --destructive-foreground: oklch(0.98 0.012 85);
-
-  --border: oklch(0.34 0.022 55);
-  --input: oklch(0.34 0.022 55);
-  --ring: oklch(0.62 0.115 48);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
 }
 
 /* =========================================
@@ -348,5 +166,26 @@
 
   body {
     @apply min-h-screen bg-background text-foreground;
+    letter-spacing: -0.005em;
+  }
+
+  /* Global Layout Container */
+  .container {
+    width: min(1180px, calc(100% - 64px));
+    margin-inline: auto;
+  }
+
+  @media (max-width: 767px) {
+    .container {
+      width: min(100% - 36px, 1180px);
+    }
+  }
+
+  /* Large Serif Headings */
+  h1,
+  h2,
+  h3,
+  .font-heading {
+    letter-spacing: -0.025em;
   }
 }

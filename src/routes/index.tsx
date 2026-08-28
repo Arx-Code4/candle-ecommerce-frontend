@@ -7,10 +7,13 @@ import ShopLayout from '@/components/layouts/ShopLayout';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import GlobalError from '@/components/common/GlobalError';
 import { ROUTES } from '@/constants';
 
 // Shop — public, browsable by anyone, no auth required
 const HomePage = lazy(() => import('@/pages/HomePage'));
+const AboutPage = lazy(() => import('@/pages/AboutPage'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const CatalogPage = lazy(() => import('@/pages/CatalogPage'));
 const ProductDetailPage = lazy(() => import('@/pages/ProductDetailPage'));
 
@@ -50,8 +53,11 @@ const router = createBrowserRouter([
   // Public shop — no guard, no session
   {
     element: <ShopLayout />,
+    errorElement: <GlobalError />,
     children: [
       { path: ROUTES.HOME, element: withSuspense(<HomePage />) },
+      { path: ROUTES.ABOUT, element: withSuspense(<AboutPage />) },
+      { path: ROUTES.CONTACT, element: withSuspense(<ContactPage />) },
       { path: ROUTES.CATALOG, element: withSuspense(<CatalogPage />) },
       { path: ROUTES.PRODUCT_DETAIL, element: withSuspense(<ProductDetailPage />) },
     ],
@@ -60,6 +66,7 @@ const router = createBrowserRouter([
   // Authenticated shopper — cart onward requires login
   {
     element: <ProtectedRoute />,
+    errorElement: <GlobalError />,
     children: [
       {
         element: <DashboardLayout />,
@@ -77,6 +84,7 @@ const router = createBrowserRouter([
   // Auth
   {
     element: <PublicRoute />,
+    errorElement: <GlobalError />,
     children: [
       {
         element: <AuthLayout maxWidth="w-full" />,
@@ -93,6 +101,7 @@ const router = createBrowserRouter([
   // Admin
   {
     element: <AdminRoute />,
+    errorElement: <GlobalError />,
     children: [
       {
         element: <AdminLayout />,
@@ -106,7 +115,7 @@ const router = createBrowserRouter([
     ],
   },
 
-  { path: '*', element: withSuspense(<NotFoundPage />) },
+  { path: '*', element: withSuspense(<NotFoundPage />), errorElement: <GlobalError /> },
 ]);
 
 export default router;
