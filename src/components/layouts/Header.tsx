@@ -93,7 +93,15 @@ export function Header() {
             </button>
 
             {/* Dropdown Menu */}
-            <div className="absolute top-[calc(100%+8px)] right-0 w-[160px] rounded-[8px] bg-white py-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-[#E3D5C8] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+            <div className="absolute top-[calc(100%+8px)] right-0 w-[180px] rounded-[8px] bg-white py-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-[#E3D5C8] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+              {user.role === 'ADMIN' && (
+                <Link
+                  to={ROUTES.ADMIN_DASHBOARD}
+                  className="block px-4 py-2 text-[12.5px] font-bold text-[#944A27] bg-[#FDF6E3]/50 hover:bg-[#F8F3ED] border-b border-[#E3D5C8]/40 transition-colors uppercase tracking-wider"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
               <Link
                 to={ROUTES.ORDERS}
                 className="block px-4 py-2 text-[12.5px] font-medium text-[var(--lumiere-ink)] hover:bg-[#F8F3ED] transition-colors"
