@@ -92,9 +92,10 @@ describe('ProductDetailPage', () => {
     variantSelectorMocks.lastOnSelect = null;
     vi.mocked(useParams).mockReturnValue({ id: 'p1' });
     vi.mocked(useNavigate).mockReturnValue(navigate);
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({ accessToken: 'abc' } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
+    vi.mocked(useAuthStore).mockImplementation((selector) => {
+      const state = { accessToken: 'abc' } as unknown as ReturnType<typeof useAuthStore.getState>;
+      return selector ? selector(state) : state;
+    });
     vi.mocked(useProduct).mockReturnValue({
       data: mockProduct,
       isSuccess: true,
@@ -225,9 +226,10 @@ describe('ProductDetailPage', () => {
   });
 
   it('unauthenticated click redirects to login with pendingVariantId and redirect params, and does NOT call the cart endpoint', async () => {
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({ accessToken: null } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
+    vi.mocked(useAuthStore).mockImplementation((selector) => {
+      const state = { accessToken: null } as unknown as ReturnType<typeof useAuthStore.getState>;
+      return selector ? selector(state) : state;
+    });
     const user = userEvent.setup();
     renderPage();
     variantSelectorMocks.lastOnSelect?.(inStockVariant);

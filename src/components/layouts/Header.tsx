@@ -11,7 +11,7 @@ export function Header() {
   const location = useLocation();
   const isHome = location.pathname === ROUTES.HOME || location.pathname === '/';
   const user = useAuthStore((s) => s.user);
-  const { mutate: logout } = useLogout();
+  const { mutate: logout, isPending } = useLogout();
 
   return (
     <header
@@ -86,12 +86,29 @@ export function Header() {
               <span className="text-[9px] opacity-70 leading-tight">{user.email}</span>
             </div>
             <button
-              onClick={() => logout()}
-              title="Click to logout"
+              title="Account Menu"
               className={`flex items-center justify-center size-[34px] rounded-full font-heading text-[16px] cursor-pointer transition-all ${isHome ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-primary text-white hover:brightness-110 shadow-sm'}`}
             >
               {user.email.charAt(0).toUpperCase()}
             </button>
+
+            {/* Dropdown Menu */}
+            <div className="absolute top-[calc(100%+8px)] right-0 w-[160px] rounded-[8px] bg-white py-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-[#E3D5C8] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+              <Link
+                to={ROUTES.ORDERS}
+                className="block px-4 py-2 text-[12.5px] font-medium text-[var(--lumiere-ink)] hover:bg-[#F8F3ED] transition-colors"
+              >
+                Order History
+              </Link>
+              <button
+                onClick={() => logout()}
+                disabled={isPending}
+                title="Click to logout"
+                className="block w-full text-left px-4 py-2 text-[12.5px] font-medium text-[#D14949] hover:bg-[#FDF6F6] disabled:opacity-50 transition-colors"
+              >
+                {isPending ? 'Logging out...' : 'Log Out'}
+              </button>
+            </div>
           </div>
         ) : (
           <Link

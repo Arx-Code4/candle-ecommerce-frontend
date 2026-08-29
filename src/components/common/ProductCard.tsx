@@ -10,7 +10,7 @@ interface ProductCardProps {
   variants: ProductVariant[];
 }
 
-const ProductCard: FC<ProductCardProps> = ({ id, name, price, primaryPhotoUrl }) => {
+const ProductCard: FC<ProductCardProps> = ({ id, name, price, primaryPhotoUrl, variants }) => {
   const navigate = useNavigate();
 
   // Create a pseudo description based on name
@@ -40,11 +40,13 @@ const ProductCard: FC<ProductCardProps> = ({ id, name, price, primaryPhotoUrl })
           className="w-full h-full object-cover rounded-[10px] transition-transform duration-[400ms] ease-out group-hover:scale-[1.025]"
         />
         {/* Badges / Favorite Button */}
-        <div className="absolute top-4 left-4">
-          <span className="bg-black/60 text-white backdrop-blur-sm px-2.5 py-1 rounded-[6px] text-[10px] font-semibold tracking-wide">
-            In Stock
-          </span>
-        </div>
+        {variants?.some((v) => v.stock > 0) && (
+          <div className="absolute top-4 left-4">
+            <span className="bg-black/60 text-white backdrop-blur-sm px-2.5 py-1 rounded-[6px] text-[10px] font-semibold tracking-wide">
+              In Stock
+            </span>
+          </div>
+        )}
         <button
           aria-label={`Add ${name} to favorites`}
           onClick={(e) => {

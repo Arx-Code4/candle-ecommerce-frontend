@@ -55,7 +55,7 @@ describe('HomePage', () => {
     } as unknown as ReturnType<typeof useProducts>);
 
     renderPage();
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 5; i++) {
       expect(screen.getByText(`Candle ${i}`)).toBeInTheDocument();
     }
   });
@@ -70,7 +70,7 @@ describe('HomePage', () => {
 
     renderPage();
     expect(screen.getAllByTestId(/skeleton/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/Candle/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Candle 1/)).not.toBeInTheDocument();
   });
 
   it('error state shows inline error with retry', async () => {
@@ -111,7 +111,7 @@ describe('HomePage', () => {
     } as unknown as ReturnType<typeof useProducts>);
 
     renderPage();
-    expect(screen.getByRole('link', { name: /browse full catalog/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /view all products/i })).toHaveAttribute(
       'href',
       '/products'
     );

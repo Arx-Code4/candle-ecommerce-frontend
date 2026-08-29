@@ -324,6 +324,7 @@ export default function CatalogPage() {
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
+                    data-testid="skeleton"
                     className="aspect-[4/5] animate-pulse rounded-[16px] bg-white shadow-sm border border-[rgba(232,210,193,0.3)]"
                   />
                 ))}

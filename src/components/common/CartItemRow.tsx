@@ -105,6 +105,7 @@ const CartItemRow: FC<CartItemRowProps> = ({ item }) => {
         <div className="flex items-center h-[36px] rounded-full border border-[#E3D5C8] bg-[#FCF8F3] px-1 shrink-0">
           <button
             type="button"
+            aria-label="Decrease quantity"
             disabled={isUpdating || pendingQuantity <= 1}
             onClick={() => changeQuantity(Math.max(1, pendingQuantity - 1))}
             className="w-8 h-full flex items-center justify-center text-[#756D65] hover:text-[var(--lumiere-ink)] disabled:opacity-30 transition-colors"
@@ -122,11 +123,15 @@ const CartItemRow: FC<CartItemRowProps> = ({ item }) => {
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </button>
-          <span className="w-8 text-center text-[13px] font-semibold text-[var(--lumiere-ink)]">
+          <span
+            data-testid="item-quantity"
+            className="w-8 text-center text-[13px] font-semibold text-[var(--lumiere-ink)]"
+          >
             {pendingQuantity}
           </span>
           <button
             type="button"
+            aria-label="Increase quantity"
             disabled={isUpdating}
             onClick={() => changeQuantity(pendingQuantity + 1)}
             className="w-8 h-full flex items-center justify-center text-[#756D65] hover:text-[var(--lumiere-ink)] disabled:opacity-30 transition-colors"
@@ -155,6 +160,7 @@ const CartItemRow: FC<CartItemRowProps> = ({ item }) => {
         {/* Remove Button */}
         <button
           type="button"
+          aria-label="Remove item"
           onClick={handleRemove}
           disabled={isRemoving}
           className="size-[36px] rounded-[10px] border border-[#E3D5C8] bg-[#FCF8F3] flex items-center justify-center text-[#944A27] hover:bg-[#F3E9DE] disabled:opacity-50 transition-colors shrink-0"

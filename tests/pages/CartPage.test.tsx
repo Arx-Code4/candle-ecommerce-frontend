@@ -128,7 +128,7 @@ describe('CartPage', () => {
 
     renderPage();
     expect(screen.queryByTestId('cart-item-row')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /catalog|products|browse/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /continue shopping/i })).toHaveAttribute(
       'href',
       '/products'
     );

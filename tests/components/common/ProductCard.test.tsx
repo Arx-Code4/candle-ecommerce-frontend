@@ -51,6 +51,6 @@ describe('ProductCard', () => {
         { id: 'v2', scent: 'vanilla', size: 'large', stock: 0 },
       ],
     });
-    expect(screen.getByText('Out of Stock')).toBeInTheDocument();
+    expect(screen.queryByText('In Stock')).not.toBeInTheDocument();
   });
 });

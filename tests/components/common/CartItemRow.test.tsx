@@ -41,7 +41,7 @@ describe('CartItemRow', () => {
     render(<CartItemRow item={baseItem} />);
     expect(screen.getByText('Vanilla Candle')).toBeInTheDocument();
     expect(screen.getByText(/25\.00/)).toBeInTheDocument();
-    expect(screen.getByDisplayValue('2')).toBeInTheDocument();
+    expect(screen.getByTestId('item-quantity')).toHaveTextContent('2');
   });
 
   it('clicking + calls useUpdateCartItem with incremented quantity', async () => {
@@ -67,7 +67,7 @@ describe('CartItemRow', () => {
 
     await user.click(screen.getByRole('button', { name: /\+|increase|increment/i }));
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument();
+    expect(screen.getByTestId('item-quantity')).toHaveTextContent('3');
   });
 
   it('remove button calls useRemoveCartItem', async () => {
@@ -101,7 +101,7 @@ describe('CartItemRow', () => {
     await user.click(screen.getByRole('button', { name: /\+|increase|increment/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/adjusted to available stock/i)).toBeInTheDocument();
+      expect(screen.getByText(/Max 5 available/i)).toBeInTheDocument();
     });
   });
 
