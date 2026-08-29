@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen w-full bg-background">
       {/* Left brand panel – hidden on mobile */}
-      <div className="hidden md:flex md:w-1/2 shrink-0 relative flex-col justify-end p-16 bg-[url('https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center">
+      <div className="hidden md:flex md:w-1/2 shrink-0 relative flex-col justify-end p-16 bg-[url('/images/catalog-hero.webp')] bg-cover bg-center">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
         <div className="relative z-10 text-white pb-20 pl-4">
           <h1 className="font-heading text-display-lg tracking-[0.15em] mb-4 uppercase text-white/90">
