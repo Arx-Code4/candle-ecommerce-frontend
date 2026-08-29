@@ -31,6 +31,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 
 // Admin — logged in AND role === 'ADMIN'
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminProductListPage = lazy(() => import('@/pages/admin/AdminProductListPage'));
 const AdminProductFormPage = lazy(() => import('@/pages/admin/AdminProductFormPage'));
 const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'));
@@ -106,6 +107,7 @@ const router = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
+          { path: ROUTES.ADMIN_DASHBOARD, element: withSuspense(<AdminDashboardPage />) },
           { path: ROUTES.ADMIN_PRODUCTS, element: withSuspense(<AdminProductListPage />) },
           { path: ROUTES.ADMIN_PRODUCT_NEW, element: withSuspense(<AdminProductFormPage />) },
           { path: ROUTES.ADMIN_PRODUCT_EDIT, element: withSuspense(<AdminProductFormPage />) },

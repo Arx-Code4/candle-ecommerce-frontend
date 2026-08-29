@@ -20,20 +20,30 @@ export default function AdminOrdersPage() {
   const orders = data?.items ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h2 className="font-heading text-2xl text-foreground">Orders</h2>
-        <div className="space-y-1">
-          <Label htmlFor="order-status-filter">Filter by status</Label>
+    <div className="max-w-5xl space-y-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-heading text-[32px] md:text-[40px] text-[var(--lumiere-ink)] leading-tight">
+            Orders
+          </h1>
+          <p className="text-[14px] text-[#756D65]">View and fulfill customer purchases.</p>
+        </div>
+        <div className="flex flex-col gap-1.5 shrink-0">
+          <Label
+            htmlFor="order-status-filter"
+            className="text-[11px] font-semibold text-[#756D65] uppercase tracking-wider"
+          >
+            Filter Status
+          </Label>
           <select
             id="order-status-filter"
-            className="h-8 rounded-lg border border-input bg-background px-2.5 text-sm text-foreground"
+            className="h-10 rounded-[10px] border border-[#E3D5C8] bg-white px-4 text-[13px] font-medium text-[var(--lumiere-ink)] focus:outline-none focus:border-[#944A27] focus:ring-1 focus:ring-[#944A27] transition-all shadow-sm"
             value={status}
             onChange={(e) => setStatus(e.target.value as OrderStatus | '')}
           >
-            <option value="">All</option>
-            <option value="PROCESSING">PROCESSING</option>
-            <option value="SHIPPED">SHIPPED</option>
+            <option value="">All Orders</option>
+            <option value="PROCESSING">Processing</option>
+            <option value="SHIPPED">Shipped</option>
           </select>
         </div>
       </div>

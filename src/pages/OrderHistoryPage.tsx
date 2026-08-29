@@ -10,10 +10,11 @@ export default function OrderHistoryPage() {
     return (
       <div
         data-testid="order-history-skeleton"
-        className="mx-auto max-w-2xl p-6 flex flex-col gap-3"
+        className="mx-auto max-w-[1000px] px-6 md:px-12 lg:px-16 pt-[140px] pb-24 flex flex-col gap-4"
       >
+        <div className="h-8 w-48 mb-8 animate-pulse rounded-md bg-[#E3D5C8]/30" />
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
+          <div key={i} className="h-[104px] animate-pulse rounded-[16px] bg-[#E3D5C8]/20" />
         ))}
       </div>
     );
@@ -21,8 +22,10 @@ export default function OrderHistoryPage() {
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-2xl p-6">
-        <p className="text-sm text-destructive">Failed to load your orders. Please try again.</p>
+      <div className="mx-auto max-w-[1000px] px-6 md:px-12 lg:px-16 pt-[140px] pb-24 text-center">
+        <p className="text-[13px] font-medium text-red-600">
+          Failed to load your orders. Please try again.
+        </p>
       </div>
     );
   }
@@ -31,10 +34,10 @@ export default function OrderHistoryPage() {
 
   if (orders.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl p-6">
+      <div className="mx-auto max-w-[1000px] px-6 md:px-12 lg:px-16 pt-[140px] pb-24">
         <EmptyState
           message="You haven't placed any orders yet."
-          ctaLabel="Browse catalog"
+          ctaLabel="Browse Catalog"
           ctaHref={ROUTES.CATALOG}
         />
       </div>
@@ -42,11 +45,19 @@ export default function OrderHistoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-6 flex flex-col gap-3">
-      <h1 className="mb-2 font-heading text-2xl text-foreground">Order History</h1>
-      {orders.map((order) => (
-        <OrderCard key={order.id} order={order} />
-      ))}
+    <div className="mx-auto max-w-[1000px] px-6 md:px-12 lg:px-16 pt-[140px] pb-24 flex flex-col">
+      <div className="mb-10 text-center md:text-left">
+        <h1 className="font-heading text-[32px] md:text-[40px] text-[var(--lumiere-ink)] leading-tight mb-2">
+          Order History
+        </h1>
+        <p className="text-[13px] text-[#756D65]">Track and manage your past purchases.</p>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {orders.map((order) => (
+          <OrderCard key={order.id} order={order} />
+        ))}
+      </div>
     </div>
   );
 }

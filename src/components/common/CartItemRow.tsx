@@ -73,11 +73,6 @@ const CartItemRow: FC<CartItemRowProps> = ({ item }) => {
             (item as CartItem & { primaryPhotoUrl?: string }).primaryPhotoUrl ||
             '/images/discovery-candle.webp'
           }
-          src={
-            item.photoUrl ||
-            (item as CartItem & { primaryPhotoUrl?: string }).primaryPhotoUrl ||
-            '/images/discovery-candle.webp'
-          }
           alt={item.name}
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/images/discovery-candle.webp';
