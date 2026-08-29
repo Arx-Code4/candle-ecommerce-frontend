@@ -54,14 +54,14 @@ describe('AdminLayout', () => {
       'href',
       ROUTES.ADMIN_ORDERS
     );
-    expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+    expect(screen.getByText(/log out/i)).toBeInTheDocument();
     expect(screen.getByText('Admin child')).toBeInTheDocument();
   });
 
   it('calls logout from useAuth', async () => {
     const user = userEvent.setup();
     renderLayout();
-    await user.click(screen.getByRole('button', { name: /logout/i }));
+    await user.click(screen.getByText(/log out/i));
     expect(logout).toHaveBeenCalled();
   });
 });

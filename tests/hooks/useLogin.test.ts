@@ -103,7 +103,7 @@ describe('useLogin', () => {
     expect(invalidateQueriesSpy).not.toHaveBeenCalled();
   });
 
-  it('admin role always navigates to /admin/products, ignoring any redirect param', async () => {
+  it('admin role always navigates to ROUTES.ADMIN_DASHBOARD, ignoring any redirect param', async () => {
     vi.mocked(useSearchParams).mockReturnValue([
       new URLSearchParams('redirect=/checkout'),
       vi.fn(),
@@ -116,7 +116,7 @@ describe('useLogin', () => {
     result.current.mutate({ email: 'admin@example.com', password: 'password123' });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(navigate).toHaveBeenCalledWith(ROUTES.ADMIN_PRODUCTS);
+    expect(navigate).toHaveBeenCalledWith(ROUTES.ADMIN_DASHBOARD);
     expect(getSafeRedirectPath).not.toHaveBeenCalled();
   });
 

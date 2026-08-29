@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
-// import type { AxiosError } from 'axios';
 import { useCart } from '@/hooks/useCart';
 import { useCheckout } from '@/hooks/useCheckout';
 import CartSummary from '@/components/common/CartSummary';
@@ -73,14 +72,24 @@ export default function CheckoutPage() {
     return null;
   }
 
-  const isConflict = checkout.error instanceof Error && checkout.error.message === 'Cart changed';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isAxiosLike = (err: any): err is { response: any; message: string } =>
+    err && typeof err === 'object' && 'response' in err;
+
+  const isConflict = isAxiosLike(checkout.error) && checkout.error.response?.status === 409;
+
   const conflictItems =
-    checkout.error && 'items' in checkout.error ? (checkout.error.items as string[]) : [];
+    isConflict && checkout.error.response?.data?.errors
+      ? (checkout.error.response.data.errors as string[])
+      : [];
+
   const rootErrorMessage =
     checkout.error && !isConflict
-      ? checkout.error instanceof Error
-        ? checkout.error.message
-        : 'Checkout failed'
+      ? isAxiosLike(checkout.error) && checkout.error.response?.data?.message
+        ? checkout.error.response.data.message
+        : checkout.error instanceof Error
+          ? checkout.error.message
+          : 'Checkout failed'
       : null;
 
   return (
