@@ -76,19 +76,20 @@ export default function CheckoutPage() {
   const isAxiosLike = (err: any): err is { response: any; message: string } =>
     err && typeof err === 'object' && 'response' in err;
 
-  const isConflict = isAxiosLike(checkout.error) && checkout.error.response?.status === 409;
+  const err = checkout.error;
+  const isConflict = isAxiosLike(err) && err.response?.status === 409;
 
   const conflictItems =
-    isConflict && checkout.error.response?.data?.errors
-      ? (checkout.error.response.data.errors as string[])
+    isAxiosLike(err) && isConflict && err.response?.data?.errors
+      ? (err.response.data.errors as string[])
       : [];
 
   const rootErrorMessage =
-    checkout.error && !isConflict
-      ? isAxiosLike(checkout.error) && checkout.error.response?.data?.message
-        ? checkout.error.response.data.message
-        : checkout.error instanceof Error
-          ? checkout.error.message
+    err && !isConflict
+      ? isAxiosLike(err) && err.response?.data?.message
+        ? err.response.data.message
+        : err instanceof Error
+          ? err.message
           : 'Checkout failed'
       : null;
 
