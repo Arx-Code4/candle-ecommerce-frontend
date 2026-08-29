@@ -20,9 +20,10 @@ describe('useCart', () => {
   });
 
   function mockAuth(accessToken: string | null) {
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({ accessToken } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
+    vi.mocked(useAuthStore).mockImplementation((selector) => {
+      const state = { accessToken } as unknown as ReturnType<typeof useAuthStore.getState>;
+      return selector ? selector(state) : state;
+    });
   }
 
   it('fetches the cart when authenticated', async () => {

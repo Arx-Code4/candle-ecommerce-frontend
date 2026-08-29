@@ -109,7 +109,7 @@ describe('CheckoutPage', () => {
     renderPage();
 
     expect(mockNavigate).toHaveBeenCalledWith('/cart');
-    expect(screen.queryByLabelText(/shipping name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/full name/i)).not.toBeInTheDocument();
   });
 
   it('redirects to /cart when every item is unavailable, same as an empty cart', () => {
@@ -127,7 +127,7 @@ describe('CheckoutPage', () => {
     renderPage();
 
     expect(mockNavigate).toHaveBeenCalledWith('/cart');
-    expect(screen.queryByLabelText(/shipping name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/full name/i)).not.toBeInTheDocument();
   });
 
   it('renders the shipping form when the cart has at least one available item', () => {
@@ -141,8 +141,8 @@ describe('CheckoutPage', () => {
 
     renderPage();
 
-    expect(screen.getByLabelText(/shipping name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/shipping phone/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/shipping address/i)).toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -172,7 +172,7 @@ describe('CheckoutPage', () => {
     const user = userEvent.setup();
 
     renderPage();
-    await user.click(screen.getByRole('button', { name: /pay with chapa/i }));
+    await user.click(screen.getByText(/pay with chapa/i));
 
     expect(mutateMock).not.toHaveBeenCalled();
     expect(await screen.findAllByText(/required/i)).not.toHaveLength(0);
@@ -189,10 +189,10 @@ describe('CheckoutPage', () => {
     const user = userEvent.setup();
 
     renderPage();
-    await user.type(screen.getByLabelText(/shipping name/i), 'Ada Lovelace');
-    await user.type(screen.getByLabelText(/shipping phone/i), '0911000000');
+    await user.type(screen.getByLabelText(/full name/i), 'Ada Lovelace');
+    await user.type(screen.getByLabelText(/phone number/i), '0911000000');
     await user.type(screen.getByLabelText(/shipping address/i), 'Addis Ababa');
-    await user.click(screen.getByRole('button', { name: /pay with chapa/i }));
+    await user.click(screen.getByText(/pay with chapa/i));
 
     expect(mutateMock).toHaveBeenCalledWith({
       shippingName: 'Ada Lovelace',
@@ -274,8 +274,8 @@ describe('CheckoutPage', () => {
 
     renderPage();
 
-    expect(screen.getByTestId('checkout-loading')).toBeInTheDocument();
-    expect(screen.queryByLabelText(/shipping name/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkout-skeleton')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/full name/i)).not.toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
@@ -290,6 +290,6 @@ describe('CheckoutPage', () => {
 
     renderPage();
 
-    expect(screen.getByRole('button', { name: /pay with chapa/i })).toBeDisabled();
+    expect(screen.getByText(/processing/i).closest('button')).toBeDisabled();
   });
 });

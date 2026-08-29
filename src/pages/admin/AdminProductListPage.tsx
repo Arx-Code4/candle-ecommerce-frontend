@@ -18,12 +18,17 @@ export default function AdminProductListPage() {
   const products = data?.items ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl space-y-10">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="font-heading text-2xl text-foreground">Products</h2>
+        <div className="flex flex-col gap-2">
+          <h1 className="font-heading text-[32px] md:text-[40px] text-[var(--lumiere-ink)] leading-tight">
+            Products
+          </h1>
+          <p className="text-[14px] text-[#756D65]">Manage your catalog and stock.</p>
+        </div>
         <Link
           to={ROUTES.ADMIN_PRODUCT_NEW}
-          className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80"
+          className="inline-flex h-10 items-center rounded-[10px] bg-[#944A27] px-6 text-[12px] font-semibold uppercase tracking-wider text-white hover:brightness-110 shadow-sm transition-all"
         >
           Add Product
         </Link>

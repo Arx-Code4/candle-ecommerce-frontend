@@ -65,18 +65,20 @@ describe('AdminOrdersPage', () => {
     expect(screen.getAllByText('Jane Doe')).toHaveLength(2);
   });
 
-  it('status filter only offers All, PROCESSING, and SHIPPED', () => {
+  it('status filter only offers All Orders, Processing, and Shipped', () => {
     renderPage();
-    const select = screen.getByLabelText(/filter by status/i);
+    const select = screen.getByLabelText(/filter status/i);
     const options = Array.from(select.querySelectorAll('option')).map((o) => o.textContent);
-    expect(options).toEqual(['All', 'PROCESSING', 'SHIPPED']);
+    expect(options).toEqual(['All Orders', 'Processing', 'Shipped']);
   });
 
   it('changing the status filter calls useAdminOrders with the new status', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.selectOptions(screen.getByLabelText(/filter by status/i), 'SHIPPED');
-    expect(useAdminOrders).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'SHIPPED' }));
+    await user.selectOptions(screen.getByLabelText(/filter status/i), 'PROCESSING');
+    expect(useAdminOrders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'PROCESSING' })
+    );
   });
 
   it('shows an empty state when there are no orders', () => {

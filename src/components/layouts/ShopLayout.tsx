@@ -1,63 +1,22 @@
-import { Outlet, Link } from 'react-router-dom';
-import { ShoppingBag, ShoppingCart, LogIn } from 'lucide-react';
-import { useCart } from '@/hooks/useCart';
+import { Outlet, useLocation } from 'react-router-dom';
 import { ShopFooter } from '@/components/common/ShopFooter';
+import { Header } from './Header';
 import { ROUTES } from '@/constants';
 
 export default function ShopLayout() {
-  // useCart() now handles the anonymous-visitor guard internally —
-  // this layout has no auth logic of its own anymore.
-  const { data: cart } = useCart();
-  const cartCount = cart?.items.length ?? 0;
+  const location = useLocation();
+  const isHomePage = location.pathname === ROUTES.HOME || location.pathname === '/';
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
-        <Link
-          to={ROUTES.HOME}
-          aria-label="Home"
-          className="font-heading text-xl tracking-widest text-foreground"
-        >
-          LUMIÈRE
-        </Link>
+    <div className="min-h-screen flex flex-col bg-background relative">
+      <Header />
 
-        <nav className="flex items-center gap-6">
-          <Link
-            to={ROUTES.CATALOG}
-            aria-label="Catalog"
-            className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary"
-          >
-            <ShoppingBag className="size-4" />
-            Products
-          </Link>
-
-          <Link
-            to={ROUTES.CART}
-            className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary"
-          >
-            <ShoppingCart className="size-4" />
-            Cart
-            {cartCount > 0 && (
-              <span
-                data-testid="cart-badge"
-                className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground"
-              >
-                {cartCount}
-              </span>
-            )}
-          </Link>
-
-          <Link
-            to={ROUTES.LOGIN}
-            className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
-          >
-            <LogIn className="size-4" />
-            Login
-          </Link>
-        </nav>
-      </header>
-
-      <main className="flex-1">
+      {/* 
+        If it's the home page, we want the content to go all the way to the top edge 
+        so the Hero image sits behind the transparent header.
+        Otherwise, we add top padding so content isn't obscured.
+      */}
+      <main className={`flex-1 ${!isHomePage ? 'pt-[90px]' : ''}`}>
         <Outlet />
       </main>
 

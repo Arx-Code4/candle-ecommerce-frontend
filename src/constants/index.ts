@@ -8,11 +8,15 @@ export const ROUTES = {
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
 
+  ABOUT: '/about',
+  CONTACT: '/contact',
+
   LOGIN: '/login',
   REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
 
+  ADMIN_DASHBOARD: '/admin',
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_PRODUCT_NEW: '/admin/products/new',
   ADMIN_PRODUCT_EDIT: '/admin/products/:id/edit',

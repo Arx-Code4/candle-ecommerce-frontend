@@ -15,19 +15,17 @@ describe('ShopFooter', () => {
   it('renders as a footer landmark with the brand blurb', () => {
     renderFooter();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-    expect(screen.getByText(/lumière/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/lumière/i).length).toBeGreaterThan(0);
   });
 
-  it('links to the catalog and order history', () => {
+  it('links to the catalog and about us', () => {
     renderFooter();
     expect(screen.getByRole('link', { name: /all candles/i })).toHaveAttribute('href', '/products');
-    expect(screen.getByRole('link', { name: /order history/i })).toHaveAttribute('href', '/orders');
+    expect(screen.getByRole('link', { name: /about us/i })).toHaveAttribute('href', '/about');
   });
 
-  it('renders a newsletter signup form without navigating on submit', () => {
+  it('renders a contact us CTA', () => {
     renderFooter();
-    const emailInput = screen.getByPlaceholderText(/you@email\.com/i);
-    expect(emailInput).toHaveAttribute('type', 'email');
-    expect(screen.getByRole('button', { name: /sign up/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /contact us/i }).length).toBeGreaterThan(0);
   });
 });

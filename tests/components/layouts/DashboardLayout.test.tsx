@@ -32,12 +32,13 @@ describe('DashboardLayout', () => {
     vi.clearAllMocks();
     // Every route behind this layout is already ProtectedRoute-gated, so
     // there's no "anonymous visitor" case to test here, unlike ShopLayout.
-    vi.mocked(useAuthStore).mockImplementation((selector) =>
-      selector({
+    vi.mocked(useAuthStore).mockImplementation((selector) => {
+      const state = {
         accessToken: 'abc',
         user: { id: 'u1', email: 'shopper@example.com' },
-      } as unknown as ReturnType<typeof useAuthStore.getState>)
-    );
+      } as unknown as ReturnType<typeof useAuthStore.getState>;
+      return selector ? selector(state) : state;
+    });
     vi.mocked(useCart).mockReturnValue({
       data: { items: [], total: '0.00' } satisfies Cart,
       isLoading: false,
@@ -51,8 +52,8 @@ describe('DashboardLayout', () => {
 
   it('renders header, nav, footer, and the matched child route', () => {
     renderLayout();
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /catalog/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /home/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /products/i })).toBeInTheDocument();
     expect(screen.getByText('Child route content')).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
@@ -68,7 +69,7 @@ describe('DashboardLayout', () => {
     const { default: userEvent } = await import('@testing-library/user-event');
     const user = userEvent.setup();
 
-    await user.click(screen.getByText('shopper@example.com'));
+    await user.click(screen.getByTitle('Click to logout'));
     expect(logoutMock).toHaveBeenCalled();
   });
 
@@ -79,7 +80,7 @@ describe('DashboardLayout', () => {
     } as unknown as ReturnType<typeof useLogout>);
 
     renderLayout();
-    expect(screen.getByText(/logging out/i)).toBeDisabled();
+    expect(screen.getByTitle('Click to logout')).toBeDisabled();
   });
 
   it('cart badge shows item count', () => {
@@ -90,6 +91,6 @@ describe('DashboardLayout', () => {
     } as unknown as ReturnType<typeof useCart>);
 
     renderLayout();
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('Cart (2)')).toBeInTheDocument();
   });
 });

@@ -7,14 +7,15 @@ interface VariantSelectorProps {
 }
 
 const VariantSelector: FC<VariantSelectorProps> = ({ variants, onSelect }) => {
-  const [selectedScent, setSelectedScent] = useState<string | null>(() =>
-    variants.length === 1 ? variants[0].scent : null
-  );
-  const [selectedSize, setSelectedSize] = useState<string | null>(() =>
-    variants.length === 1 ? variants[0].size : null
-  );
   const scents = [...new Set(variants.map((v) => v.scent))];
   const sizes = [...new Set(variants.map((v) => v.size))];
+
+  const [selectedScent, setSelectedScent] = useState<string | null>(() =>
+    scents.length === 1 ? scents[0] : null
+  );
+  const [selectedSize, setSelectedSize] = useState<string | null>(() =>
+    sizes.length === 1 ? sizes[0] : null
+  );
 
   // Fires onSelect exactly when scent+size resolve to one real, purchasable
   // variant — not on every keystroke of partial selection.

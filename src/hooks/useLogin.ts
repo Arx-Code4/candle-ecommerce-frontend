@@ -50,7 +50,7 @@ export function useLogin() {
 
       // Role-aware redirect
       if (data.user.role === 'ADMIN') {
-        navigate(ROUTES.ADMIN_PRODUCTS);
+        navigate(ROUTES.ADMIN_DASHBOARD);
         return;
       }
 

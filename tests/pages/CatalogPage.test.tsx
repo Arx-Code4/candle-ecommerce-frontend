@@ -58,20 +58,20 @@ describe('CatalogPage', () => {
       scent: 'vanilla',
       size: undefined,
       page: 2,
-      limit: 20,
+      limit: 12,
     });
   });
 
   it('renders FilterBar and a ProductCard grid on success', () => {
     vi.mocked(useProducts).mockReturnValue({
-      data: { items: products, page: 1, limit: 20, total: 1 },
+      data: { items: products, page: 1, limit: 12, total: 1 },
       isSuccess: true,
       isLoading: false,
       isError: false,
     } as unknown as ReturnType<typeof useProducts>);
 
     renderPage();
-    expect(screen.getByRole('navigation', { name: /filter/i })).toBeInTheDocument();
+    expect(screen.getByText('Filter by')).toBeInTheDocument();
     expect(screen.getByText('Vanilla Candle')).toBeInTheDocument();
   });
 
